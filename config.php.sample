@@ -9,7 +9,9 @@ $vvoDataTime=date("H%3\Ai", $adjustedLookupTime);
 $reqUrlVvo='https://www.vvo-online.de/de/fahrplan/aktuelle-abfahrten-ankuenfte/abfahrten?stopid=33000062&date=' . $vvoDataDate . '&time=' . $vvoDataTime . '&arrival=false&mot=Train&mot=SuburbanRailway&mot=Tram&mot=CityBus&mot=Cableway&mot=Ferry&mot=HailedSharedTaxi';
 
 $reqUrlWeather='http://www.wetter.de/deutschland/wetter-dresden-18232486.html';
+$reqUrlTagesschau = 'http://www.tagesschau.de/newsticker.rdf';
 $WEATHER_FILE='weather.html';
+$TAGESSCHAU_FILE='tagesschau.rdf';
 
 $VOCAB_DB_HOST = "localhost";
 $VOCAB_DB_USER = "example";

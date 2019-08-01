@@ -5,32 +5,42 @@ include('config.php');
 
 
 set_time_limit(30);
-$downloadSucceeded=false;
 $min_cache = 600; // affects automatic site reload
-$cacheAge=array( 'weather' => 0);
-$maxCacheAge=array( 'weather' => (3600 - 5));
+$cacheAge=array( 'weather' => 0,
+                 'tagesschau' => 0);
+$maxCacheAge=array( 'weather' => (3600 - 5),
+                    'tagesschau' => (1800 - 5));
 $CONFIG_FILE='status-config.ini';
 if(file_exists($CONFIG_FILE))
 {
 	$readOutConfig=parse_ini_file($CONFIG_FILE, true);
 	if(array_key_exists('Cache', $readOutConfig))
 	{
-		if(array_key_exists('weather', $readOutConfig['Cache']))
+		foreach($readOutConfig['Cache'] as $curKey => $curValue)
 		{
-			$cacheAge['weather']= (int) $readOutConfig['Cache']['weather'];
+			$cacheAge[$curKey] = (int) $curValue;
 		}
 	}
 }
 
 
-$downloadSucceeded=true;
-
-if ( (time() - $cacheAge['weather']) > $maxCacheAge['weather'])
+$curTime = time();
+foreach($cacheAge as $curCacheName => $curCacheAge)
 {
-	downloadToFile($reqUrlWeather, $WEATHER_FILE);
-	$cacheAge['weather'] = time();
+	if ( ($curTime - $curCacheAge) > $maxCacheAge[$curCacheName])
+	{
+		if('weather' == $curCacheName)
+		{
+			downloadToFile($reqUrlWeather, $WEATHER_FILE);
+		} elseif('tagesschau' == $curCacheName)
+                {
+			downloadToFile($reqUrlTagesschau, $TAGESSCHAU_FILE);
+                }
+		$cacheAge[$curCacheName] = $curTime;
+	}
 }
-file_put_contents($CONFIG_FILE, "[Cache]\nweather=" . $cacheAge['weather'] . "\n");
+
+file_put_contents($CONFIG_FILE, "[Cache]\ntagesschau=" . $cacheAge['tagesschau'] . "\nweather=" . $cacheAge['weather'] . "\n");
 
 
 
@@ -97,8 +107,38 @@ function removeAllChilds(parentNode)
 <?php
 println("</div><div class=\"cleaner\"> &nbsp; </div>");
 
+$tagesschauContents = file_get_contents($TAGESSCHAU_FILE);
+$cur_offset = 0;
+$cur_pos = FALSE;
+$cur_index = 0;
+while( FALSE !== ($cur_pos = strpos($tagesschauContents, '<title>', $cur_offset)))
+{
+	$line_end = strpos($tagesschauContents, "\n", $cur_pos);
+	if(FALSE === $line_end)
+	{
+		break;
+	}
+	if(0 < $cur_index)
+	{
+		$curTitle = substr($tagesschauContents, $cur_pos, $line_end - $cur_pos);
+		$curTitle = substr($curTitle, 7, -8);
+		echo '<li>' . $curTitle . '</li>';
+	} else
+	{
+		echo '<div style="float: left; margin-top: 10px;">Quelle tagesschau.de<ul style="margin-top: 0px">';
+	}
 
-
+	$cur_offset = $line_end;
+	$cur_index++;
+	if(6 < $cur_index)
+	{
+		break;
+	}
+}
+if(0 < $cur_index)
+{
+  echo '</ul></div>';
+}
 printTabBox();
 
 ?>
