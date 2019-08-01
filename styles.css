@@ -202,13 +202,13 @@ a:link,a:visited {
   100% { background-position: 390px 8px;}
 }
 .vehicle_tram {
-  background-image: url("tram_small.jpg");
+  background-image: url("img/travel/tram_small.jpg");
 }
 .vehicle_bus {
-  background-image: url("bus_small.jpg");
+  background-image: url("img/travel/bus_small.jpg");
 }
 .vehicle_train {
-  background-image: url("train_small.jpg");
+  background-image: url("img/travel/train_small.jpg");
 }
 .departure_cell-id, .departure_cell-type, .departure_cell-destination, .departure_cell-departure {
   float: left;
