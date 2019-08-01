@@ -7,20 +7,14 @@ include('config.php');
 set_time_limit(30);
 $downloadSucceeded=false;
 $min_cache = 600; // affects automatic site reload
-$cacheAge=array('vvo'     => 0,
-		 'weather' => 0);
-$maxCacheAge=array('vvo'     => (600  - 5),
-		   'weather' => (3600 - 5));
+$cacheAge=array( 'weather' => 0);
+$maxCacheAge=array( 'weather' => (3600 - 5));
 $CONFIG_FILE='status-config.ini';
 if(file_exists($CONFIG_FILE))
 {
 	$readOutConfig=parse_ini_file($CONFIG_FILE, true);
 	if(array_key_exists('Cache', $readOutConfig))
 	{
-		if(array_key_exists('vvo', $readOutConfig['Cache']))
-		{
-			$cacheAge['vvo']=(int) $readOutConfig['Cache']['vvo'];
-		}
 		if(array_key_exists('weather', $readOutConfig['Cache']))
 		{
 			$cacheAge['weather']= (int) $readOutConfig['Cache']['weather'];
@@ -36,20 +30,10 @@ if ( (time() - $cacheAge['weather']) > $maxCacheAge['weather'])
 	downloadToFile($reqUrlWeather, $WEATHER_FILE);
 	$cacheAge['weather'] = time();
 }
-if ( (time() - $cacheAge['vvo']) > $maxCacheAge['vvo'])
-{
-	$downloadSucceeded=downloadToFile($reqUrlVvo, $VVO_FILE);
-	$cacheAge['vvo'] = time();
-}
-file_put_contents($CONFIG_FILE, "[Cache]\nvvo=" . $cacheAge['vvo'] . "\nweather=" . $cacheAge['weather'] . "\n");
+file_put_contents($CONFIG_FILE, "[Cache]\nweather=" . $cacheAge['weather'] . "\n");
 
 
 
-$arrDepartures = array();
-if(true === $downloadSucceeded)
-{
-    $arrDepartures = parseVvoReply($VVO_FILE);
-}
 ?>
 <!DOCTYPE html>
 <html>
@@ -88,11 +72,11 @@ println("<div class=\"link_row\">");
 println("  <a href=\"https://www.wetteronline.de/regenradar/sachsen\">Regen-Radar</a>");
 println("  |");
 println("  <a href=\"https://www.wetter.de/deutschland/wetter-dresden-18232486.html\">Wetter Auskunft</a>");
-println("  |");
-println('Luftfeuchtigkeit/Vorratskammer: <a href="humidity.php" id="humidity">wird geladen...</span></a>');
+//println("  |");
+//println('Luftfeuchtigkeit/Vorratskammer: <a href="humidity.php" id="humidity">wird geladen...</span></a>');
 ?>
 <script type="text/javascript">
-document.addEventListener("DOMContentLoaded", loadHumidity);
+//document.addEventListener("DOMContentLoaded", loadHumidity);
 function loadHumidity()
 {
   var req = new XMLHttpRequest();
@@ -114,23 +98,6 @@ function removeAllChilds(parentNode)
 println("</div><div class=\"cleaner\"> &nbsp; </div>");
 
 
-
-if ( 0 < count ($arrDepartures))
-{
-	if(isset($_GET['px-guides']))
-	{
-		if(isset($_SERVER['HTTP_USER_AGENT'])) {
-			println('User-Agent: '. $_SERVER['HTTP_USER_AGENT'] . '<br/>');
-		} else {
-			println('No User-Agent sent!<br/>');
-		}
-		println('<div title="Breite  10px Hoehe: 10px" style="background-color: #000000; width:  10px; height: 10px;"> &nbsp; </div>');
-		println('<div title="Breite  50px Hoehe: 10px" style="background-color: #707070; width:  50px; height: 10px;"> &nbsp; </div>');
-		println('<div title="Breite 100px Hoehe: 10px" style="background-color: #000000; width: 100px; height: 10px;"> &nbsp; </div>');
-		println('<div title="Breite 500px Hoehe: 10px" style="background-color: #707070; width: 500px; height: 10px;"> &nbsp; </div>');
-	}
-	printDepartureBox($_SERVER['HTTP_USER_AGENT'], $arrDepartures, array('Striesen', 'Laubegast', 'Comeniusplatz'), false);
-}
 
 printTabBox();
 
