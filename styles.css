@@ -1,0 +1,394 @@
+<style type="text/css">
+body {
+  background-color: #ffffff;
+}
+.global_options {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background-color: #ffffff;
+  padding: 2px;
+  font-size: 12px;
+  border-left: 1px solid black;
+  border-bottom: 1px solid black;
+}
+a:link,a:visited {
+  color: #000000;
+  text-decoration: none;
+}
+.cleaner {
+  clear: both;
+  width: 0px;
+  height: 0px;
+  margin: 0px;
+  padding: 0px;
+}
+.weather_box {
+  font-family: Sans, sans-serif;
+}
+.weather_column {
+  background-color: #6090ff;
+  background-image: linear-gradient( to bottom, #b8e8ff 0px, #6090ff 8px, #80a0ff 105px, #b0e0ff 130px, #6090ff 133px, #6090ff 135px, #b8e8ff 142px );
+  width: 324px;
+  padding: 3px;
+  height: 135px;
+  float: left;
+  text-align: center;
+  border-radius: 20px;
+}
+@media screen and (min-width: 680px)
+{
+.weather_column:nth-child(1) {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border-right: 4px solid #ffffff;
+}
+.weather_column:nth-child(2) {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+}
+.sunny div, .bright div, .rainy div, .thunderstorm div {
+  background-color: #ffffff;
+  border-radius: 10px;
+}
+.sunny div:nth-child(3), .bright div:nth-child(3), .rainy div:nth-child(3), .thunderstorm div:nth-child(3) {
+  background-color: transparent;
+  /*background-image: linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0.75) 15px, rgba(255,255,255,0.4) 30px, rgba(255,255,255,0.2) 40px, rgba(224, 0, 0, 0) 50px);*/
+  background-image: linear-gradient( to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+  width: 56px;
+}
+.weather_detail {
+  background-color: #ffffff;
+  margin: 3px;
+  width: 100px;
+  height: 100px;
+  float: left;
+  margin: 3px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 3px 0px #ffffff;
+}
+.weather_detail div:nth-last-child(1) {
+  padding-left: 3px;
+}
+.sunny .weather_cloudiness, .bright .weather_cloudiness, .rainy .weather_cloudiness, .thunderstorm .weather_cloudiness {
+  display: none;
+}
+.sunny {
+  background-image: url("img/weather/sonne.small.png");
+  background-repeat: no-repeat;
+  background-position: 0px -5px;
+  min-height: 100px;
+  min-width: 100px;
+  /*animation: bobble_sun 15s ease infinite;*/
+}
+.sunny .weather_temperature {
+  margin-top: 43px;
+  width: 49px;
+}
+.sunny .weather_downfall {
+  display: none;
+}
+.bright {
+  background-image: url("img/weather/wolke_sonne.small.png");
+  background-size: 50px 50px;
+  background-position: 48px 18px;
+  background-repeat: no-repeat;
+}
+.rainy {
+  background-image: url("img/weather/wolke_regen_2.small.png");
+  background-size: 50px 50px;
+  background-position: 40px 18px;
+  background-repeat: no-repeat;
+}
+.thunderstorm {
+  background-image: url("img/weather/wolke_regen.small.png");
+  background-size: 50px 50px;
+  background-position: 41px 20px;
+  background-repeat: no-repeat;
+}
+.weather_date {
+  margin: 0px auto 0px auto;
+  width: 140px; /* abc */
+  color: #ffffff;
+  font-size: 20px;
+  letter-spacing: 1px;
+  font-weight: bold;
+/*box-shadow: 0px 0px 8px 2px #ffffff;*/
+/*  text-shadow: 0px 0px 5px #000000;*/
+}
+.weather_time {
+  margin-left: 36px;
+  width: 45px;
+}
+.weather_cloudiness {
+}
+.weather_temperature {
+  margin-top: 24px;
+  /*width: 46px;*/
+  text-align: left;
+  font-weight: bold;
+  background-color: transparent;
+  border-top-right-radius: 15px;
+}
+.weather_downfall {
+  text-align: left;
+}
+.weather_windspeed {
+  text-align: left;
+}
+@keyframes bobble_sun {
+  0%   { background-position: 0px -5px; }
+  50%  { background-position: 25px 10px; }
+  100% { background-position: 0px -5px; }
+}
+
+.link_row {
+  background-color: #ffffff;
+  color: #000000;
+  width: 670px;
+}
+.wrapper_departures {
+  font-size: 12pt;
+  background-color: #d0d0d0;
+  padding: 0.2em;
+  width: 320px;
+  margin-top: 10px;
+  border-radius: 20px;
+  background-image: linear-gradient( to bottom, #ffff40 0%, #d0d000 5%, #d0d000 50%, #d0d000 95%, #ffff40 100%);
+  float: left;
+}
+.departure_row {
+  font-size: 12pt;
+  font-family: Sans, Sans-Serif;
+  margin-bottom: 0.3em;
+  padding: 1px;
+  padding-right: 0px;
+  margin: 6px;
+  /*background-color: #d0e0ff;*/
+  background-color: #ffffff;
+  width: 19em;
+  height: 37px;
+  border-radius: 10px;
+}
+.vehicle_bus {
+  background-repeat: no-repeat;
+  background-position: 0px 12px;
+/*  background-position: -70px 12px;
+  animation: vehicle_moving_bus 23s linear infinite;*/
+}
+.vehicle_tram {
+  background-repeat: no-repeat;
+  background-position: 0px 7px;
+/*  background-position: -70px 7px;
+  animation: vehicle_moving_tram 23s linear infinite;*/
+}
+.vehicle_train {
+  background-repeat: no-repeat;
+  background-position: 0px 8px;
+/*  background-position: -70px 8px;
+  animation: vehicle_moving_train 23s linear infinite;*/
+}
+@keyframes vehicle_moving_bus {
+  0%   { background-position: -70px 12px;}
+  100% { background-position: 390px 12px;}
+}
+@keyframes vehicle_moving_tram {
+  0%   { background-position: -70px 7px;}
+  100% { background-position: 390px 7px;}
+}
+@keyframes vehicle_moving_train {
+  0%   { background-position: -70px 8px;}
+  100% { background-position: 390px 8px;}
+}
+.vehicle_tram {
+  background-image: url("tram_small.jpg");
+}
+.vehicle_bus {
+  background-image: url("bus_small.jpg");
+}
+.vehicle_train {
+  background-image: url("train_small.jpg");
+}
+.departure_cell-id, .departure_cell-type, .departure_cell-destination, .departure_cell-departure {
+  float: left;
+}
+.departure_cell-id {
+  margin: 0px 5px 0px 5px; 
+  width: 40px;
+  text-align: right;
+  border-radius: 8px;
+  text-shadow: 0px 1px 3px #ffffff;/* */
+  /*background-image: linear-gradient( to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 17%, rgba(255,255,255,0.5) 22%, #ffffff 30%, #ffffff 60%, rgba(255,255,255,0.5) 80%, rgba(255,255,255,1) 100%);*/
+}
+.departure_cell-type {
+  display: none;
+  width: 2.8em;
+}
+.departure_cell-type img {
+  margin-top: 0.25em;
+}
+.departure_cell-type pre {
+  font: 4px/2px monospace;
+  font-weight: bold;
+}
+.departure_cell-type pre.train {
+  margin-left: 2.6em;
+}
+.departure_cell-destination {
+  width: 10.55em;
+  border-radius: 8px;
+/*  background-image: linear-gradient( to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 17%, rgba(255,255,255,0.5) 22%, #ffffff 30%, #ffffff 60%, rgba(255,255,255,0.5) 80%, rgba(255,255,255,1) 100%);*/
+}
+.departure_cell-departure {
+  width: 4.0em;
+}
+.tabs_wrapper {
+  width: 360px;
+  height: 275px;
+  float: left;
+  margin: 10px 0px 0px 10px;
+}
+.tabs_tabbing {
+  width: 100%;
+  height: 25px;
+  font-family: Sans, sans-serif;
+  font-size: 12pt;
+}
+.tabs_tab_heading {
+  width: 80px;
+  background-color: #e0e0e0;
+  float: left;
+  padding: 2px 0px 2px 12px;
+  margin-right: 4px;
+  border: 1px solid #909090;
+  border-bottom: none;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
+.tabs_cleaner {
+  clear: both;
+  width: 0px;
+  height: 0px;
+  margin: 0px;
+  padding: 0px;
+}
+.tabs_content {
+  width: 326px;
+  height: 250px;
+  background-color: #ffffff;
+  overflow: auto;
+  border-left: 1px solid #b0b0b0;
+  border-bottom: 1px solid #b0b0b0;
+  border-right: 1px solid #b0b0b0;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+a.vocab_menuitem:link, a.vocab_menuitem {
+  color: inherit;
+  text-decoration: none;
+}
+div.vocab_menuitem {
+  float: left;
+  margin: 0px 0px 0px 10px;
+  font-weight: bold;
+  background-color: #e0e0e0;
+  padding: 3px;
+  border: 1px solid #e0e0e0;
+}
+a.vocab_menuitem:nth-child(1) div.vocab_menuitem {
+  margin: 0px;
+}
+div.vocab_menuitem:hover {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+.vocab_content_wrapper {
+  text-align: center;
+}
+.vocab_table {
+  border-collapse: collapse;
+  margin: 5px auto 0px auto;
+  text-align: left;
+}
+.vocab_table tr {
+  border-bottom: 1px solid #d0d0d0;
+}
+.vocab_table tr:last-child {
+  border: none;
+}
+.vocab_table td:nth-child(1) {
+  padding-right: 4px;
+}
+.vocab_lookup:link, .vocab_lookup:visited {
+  color: inherit;
+  text-decoration: none;
+}
+.vocab_lookup:hover {
+  font-style: italic;
+}
+.vocab_ofday_wrapper {
+  text-align: center;
+}
+.vocab_ofday_english {
+  font-family: Sans, Sans-serif, Verdana, Arial;
+  text-align: center;
+  margin-bottom: 14px;
+  text-shadow: 0px 2px 3px #808080;
+}
+.vocab_ofday_eng_5  { font-size: 64pt; }
+.vocab_ofday_eng_10 { font-size: 40pt; margin-top: 4px; }
+.vocab_ofday_eng_15 { font-size: 32pt; margin-top: 6px; }
+.vocab_ofday_eng_20 { font-size: 22pt; margin-top: 8px; }
+.vocab_ofday_eng_25 { font-size: 18pt; text-shadow: none; margin-top: 10px; }
+.vocab_ofday_eng_30 { font-size: 14pt; text-shadow: none; margin-top: 10px; }
+.vocab_ofday_eng_35 { font-size: 14pt; text-shadow: none; margin-top: 10px; }
+.vocab_ofday_eng_40 { font-size: 14pt; text-shadow: none; margin-top: 10px; }
+.vocab_ofday_eng_overlength { font-size: 14pt; text-shadow: none; margin-top: 10px; }
+.vocab_ofday_details summary {
+  border: 1px solid #c0c0c0;
+  /*font-family: Sans, sans-serif, Verdana, Arial;*/
+  color: #484848;
+  font-size: 12pt;
+  width: 118px;
+  padding: 3px;
+  margin: 0px auto 0px auto;
+  border-radius: 9px;
+  box-shadow: 0px 0px 4px 4px #d0d0d0; 
+}
+.vocab_ofday_details summary:hover {
+  color: #ffffff;
+  background-color: #000000;
+  cursor: pointer;
+}
+.vocab_ofday_details[open] summary {
+  display: none;
+}
+.vocab_ofday_details[open] {
+  border: 1px solid #c0c0c0;
+  border-radius: 20px;
+  margin: 0px auto 0px auto;
+/* reduce width of element to the width of the text content within it */
+  display: inline-block;
+}
+.vocab_ofday_translations {
+  padding: 0px;
+  margin: 8px 10px 8px 10px;
+  text-align: left;
+}
+.vocab_ofday_list_translations {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+.vocab_ofday_german {
+}
+</style>
+<style type="text/css" media="all and (max-wdith: 400px)">
+.departure_cell-type pre {
+  font: 2px/1px monospace;
+}
+.departure_cell-type pre.train {
+  margin-left: 3em;
+}
+</style>

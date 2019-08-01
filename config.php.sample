@@ -1,0 +1,24 @@
+<?php
+$VVO_FILE= getcwd() . '/vvo.html';
+
+$adjustedLookupTime=time() + 180;
+$vvoDataDate=date("d.m.Y" , $adjustedLookupTime);
+$vvoDataTime=date("H%3\Ai", $adjustedLookupTime);
+# Weissdornstr:  33000943
+# Fetscherplatz: 33000062
+$reqUrlVvo='https://www.vvo-online.de/de/fahrplan/aktuelle-abfahrten-ankuenfte/abfahrten?stopid=33000062&date=' . $vvoDataDate . '&time=' . $vvoDataTime . '&arrival=false&mot=Train&mot=SuburbanRailway&mot=Tram&mot=CityBus&mot=Cableway&mot=Ferry&mot=HailedSharedTaxi';
+
+$reqUrlWeather='http://www.wetter.de/deutschland/wetter-dresden-18232486.html';
+$WEATHER_FILE='weather.html';
+
+$VOCAB_DB_HOST = "localhost";
+$VOCAB_DB_USER = "example";
+$VOCAB_DB_PASS = "example";
+$VOCAB_DB_DB   = "example";
+
+$ENVIRON_DB_HOST = "localhost";
+$ENVIRON_DB_USER = "example";
+$ENVIRON_DB_PASS = "example";
+$ENVIRON_DB_DB   = "example";
+
+?>
