@@ -106,7 +106,7 @@ function removeAllChilds(parentNode)
 </script>
 <?php
 println("</div><div class=\"cleaner\"> &nbsp; </div>");
-
+/*
 $tagesschauContents = file_get_contents($TAGESSCHAU_FILE);
 $cur_offset = 0;
 $cur_pos = FALSE;
@@ -138,9 +138,20 @@ while( FALSE !== ($cur_pos = strpos($tagesschauContents, '<title>', $cur_offset)
 if(0 < $cur_index)
 {
   echo '</ul></div>';
-}
+}*/
 printTabBox();
+$i = 0;
+foreach(parseTagesschauRdf($TAGESSCHAU_FILE) as $cur_news)
+{
+	echo '<a href="' . $cur_news->link  . '">' . $cur_news->title . '</a>';
+	echo "<br/>\n";
 
+	$i++;
+	if(5 == $i)
+	{
+		break;
+	}
+}
 ?>
 
 </body>

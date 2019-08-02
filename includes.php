@@ -1,4 +1,6 @@
 <?php
+include('xmlparser.php');
+
 class DepartureData
 {
 	public $vehicleId = "";
@@ -17,6 +19,45 @@ class WeatherRow
 	public $weatherDownfall = "";
 	public $weatherWindDesc = "";
 	public $weatherWindSpeed = "";
+}
+class NewsItem {
+	public $title;
+	public $link;
+	public $description;
+	public $category;
+	function __construct($xmlItem)
+	{
+		foreach($xmlItem->children as $curChild)
+		{
+			switch($curChild->tagName)
+			{
+				case "title":
+					$this->title = $curChild->text;
+					break;
+				case "link":
+					$this->link  = $curChild->text;
+					break;
+				case "description":
+					$this->description = $curChild->text;
+					break;
+				case "category":
+					$this->category = $curChild->text;
+					break;
+			}
+		}
+	}
+}
+function parseTagesschauRdf($TAGESSCHAU_FILE = "")
+{
+	$xmlText = file_get_contents($TAGESSCHAU_FILE);
+	$parsedXml = parseXml($xmlText);
+	$items_node_arr = $parsedXml->querySelectorAll("rss channel item");
+	$items_arr = array();
+	foreach($items_node_arr as $cur_item_node)
+	{
+		$items_arr[] = new NewsItem($cur_item_node);
+	}
+	return $items_arr;
 }
 function parseVvoReply($VVO_FILE = "")
 {
