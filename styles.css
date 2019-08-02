@@ -383,6 +383,19 @@ div.vocab_menuitem:hover {
 }
 .vocab_ofday_german {
 }
+.news_wrapper {
+  float: left;
+}
+.news_list
+{
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+  font-size: 10pt;
+}
+.news_source {
+  float: right;
+}
 </style>
 <style type="text/css" media="all and (max-wdith: 400px)">
 .departure_cell-type pre {

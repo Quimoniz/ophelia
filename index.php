@@ -7,9 +7,11 @@ include('config.php');
 set_time_limit(30);
 $min_cache = 600; // affects automatic site reload
 $cacheAge=array( 'weather' => 0,
-                 'tagesschau' => 0);
+                 'tagesschau' => 0,
+		 'hackernews' => 0);
 $maxCacheAge=array( 'weather' => (3600 - 5),
-                    'tagesschau' => (1800 - 5));
+                    'tagesschau' => (1800 - 5),
+                    'hackernews' => (1800 - 5));
 $CONFIG_FILE='status-config.ini';
 if(file_exists($CONFIG_FILE))
 {
@@ -35,6 +37,9 @@ foreach($cacheAge as $curCacheName => $curCacheAge)
 		} elseif('tagesschau' == $curCacheName)
                 {
 			downloadToFile($reqUrlTagesschau, $TAGESSCHAU_FILE);
+		} elseif('hackernews' == $curCacheName)
+                {
+			downloadToFile($reqUrlHackernews, $HACKERNEWS_FILE);
                 }
 		$cacheAge[$curCacheName] = $curTime;
 	}
@@ -139,19 +144,53 @@ if(0 < $cur_index)
 {
   echo '</ul></div>';
 }*/
-printTabBox();
 $i = 0;
-foreach(parseTagesschauRdf($TAGESSCHAU_FILE) as $cur_news)
+echo "<div class=\"news_wrapper\">\n";
+foreach(parseRss($TAGESSCHAU_FILE) as $cur_news)
 {
-	echo '<a href="' . $cur_news->link  . '">' . $cur_news->title . '</a>';
-	echo "<br/>\n";
+	if(0 == $i)
+	{
+		echo "<ul class=\"news_list\">\n";
+	}
+	echo '  <li class="news_listitem"><a href="' . $cur_news->link  . '">' . $cur_news->title . '</a></li>';
+	echo "\n";
 
 	$i++;
-	if(5 == $i)
+	if(7 == $i)
 	{
 		break;
 	}
 }
+if(0 < $i)
+{
+	echo "</ul>\n";
+}
+echo "<div class=\"news_source\">Quelle tagesschau.de</div>";
+echo "<div class=\"cleaner\"></div>";
+$i = 0;
+foreach(parseRss($HACKERNEWS_FILE) as $cur_news)
+{
+	if(0 == $i)
+	{
+		echo "<ul class=\"news_list\">\n";
+	}
+	echo '  <li class="news_listitem"><a href="' . $cur_news->link  . '">' . $cur_news->title . '</a></li>';
+	echo "\n";
+
+	$i++;
+	if(7 == $i)
+	{
+		break;
+	}
+}
+if(0 < $i)
+{
+	echo "</ul>\n";
+}
+echo "<div class=\"news_source\">Quelle Hacker News</div>";
+echo "</div>\n";
+
+printTabBox();
 ?>
 
 </body>

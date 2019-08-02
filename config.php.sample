@@ -10,8 +10,10 @@ $reqUrlVvo='https://www.vvo-online.de/de/fahrplan/aktuelle-abfahrten-ankuenfte/a
 
 $reqUrlWeather='http://www.wetter.de/deutschland/wetter-dresden-18232486.html';
 $reqUrlTagesschau = 'http://www.tagesschau.de/newsticker.rdf';
+$reqUrlHackernews = 'https://news.ycombinator.com/rss';
 $WEATHER_FILE='weather.html';
 $TAGESSCHAU_FILE='tagesschau.rdf';
+$HACKERNEWS_FILE='hackernews.rss';
 
 $VOCAB_DB_HOST = "localhost";
 $VOCAB_DB_USER = "example";

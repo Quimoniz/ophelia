@@ -47,9 +47,9 @@ class NewsItem {
 		}
 	}
 }
-function parseTagesschauRdf($TAGESSCHAU_FILE = "")
+function parseRss($RSS_FILE = "")
 {
-	$xmlText = file_get_contents($TAGESSCHAU_FILE);
+	$xmlText = file_get_contents($RSS_FILE);
 	$parsedXml = parseXml($xmlText);
 	$items_node_arr = $parsedXml->querySelectorAll("rss channel item");
 	$items_arr = array();
