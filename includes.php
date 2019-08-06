@@ -292,7 +292,7 @@ function getDomNodeByTagAndClass ( $parentNode, $tagName,  $className) {
 }
 function downloadToFile ( $uri, $filename)
 {
-	$downloadSucceeded = true;
+	$downloadSucceeded = false;
 	
 /* CURL does not work here.  No need to bother with it
 if ( function_exists('curl_init') 
@@ -320,9 +320,12 @@ if ( function_exists('curl_init')
 */
 	if (function_exists('file_put_contents') && function_exists('file_get_contents'))
 	{
-		file_put_contents($filename, file_get_contents($uri));
-		if (0 < filesize($filename)) {
-			$downloadSucceeded = true;
+		if(is_writable($filename))
+		{
+			file_put_contents($filename, file_get_contents($uri));
+			if (0 < filesize($filename)) {
+				$downloadSucceeded = true;
+			}
 		}
 	} else {
 		print ('file_put_contents and file_get_contents not available<br/>');

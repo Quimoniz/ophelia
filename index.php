@@ -31,21 +31,26 @@ foreach($cacheAge as $curCacheName => $curCacheAge)
 {
 	if ( ($curTime - $curCacheAge) > $maxCacheAge[$curCacheName])
 	{
+		$downloadingSucceeded = FALSE;
 		if('weather' == $curCacheName)
 		{
-			downloadToFile($reqUrlWeather, $WEATHER_FILE);
+			$downloadingSucceeded = downloadToFile($reqUrlWeather, $WEATHER_FILE);
 		} elseif('tagesschau' == $curCacheName)
                 {
-			downloadToFile($reqUrlTagesschau, $TAGESSCHAU_FILE);
+			$downloadingSucceeded = downloadToFile($reqUrlTagesschau, $TAGESSCHAU_FILE);
 		} elseif('hackernews' == $curCacheName)
                 {
-			downloadToFile($reqUrlHackernews, $HACKERNEWS_FILE);
+			$downloadingSucceeded = downloadToFile($reqUrlHackernews, $HACKERNEWS_FILE);
                 }
 		$cacheAge[$curCacheName] = $curTime;
 	}
 }
-
-file_put_contents($CONFIG_FILE, "[Cache]\ntagesschau=" . $cacheAge['tagesschau'] . "\nweather=" . $cacheAge['weather'] . "\n");
+$cacheText = "[Cache]\n";
+foreach($cacheAge as $cacheKey => $cacheValue)
+{
+	$cacheText .= $cacheKey . "=" . $cacheValue . "\n";
+}
+file_put_contents($CONFIG_FILE, $cacheText);
 
 
 
@@ -111,39 +116,6 @@ function removeAllChilds(parentNode)
 </script>
 <?php
 println("</div><div class=\"cleaner\"> &nbsp; </div>");
-/*
-$tagesschauContents = file_get_contents($TAGESSCHAU_FILE);
-$cur_offset = 0;
-$cur_pos = FALSE;
-$cur_index = 0;
-while( FALSE !== ($cur_pos = strpos($tagesschauContents, '<title>', $cur_offset)))
-{
-	$line_end = strpos($tagesschauContents, "\n", $cur_pos);
-	if(FALSE === $line_end)
-	{
-		break;
-	}
-	if(0 < $cur_index)
-	{
-		$curTitle = substr($tagesschauContents, $cur_pos, $line_end - $cur_pos);
-		$curTitle = substr($curTitle, 7, -8);
-		echo '<li>' . $curTitle . '</li>';
-	} else
-	{
-		echo '<div style="float: left; margin-top: 10px;">Quelle tagesschau.de<ul style="margin-top: 0px">';
-	}
-
-	$cur_offset = $line_end;
-	$cur_index++;
-	if(6 < $cur_index)
-	{
-		break;
-	}
-}
-if(0 < $cur_index)
-{
-  echo '</ul></div>';
-}*/
 $i = 0;
 echo "<div class=\"news_wrapper\">\n";
 foreach(parseRss($TAGESSCHAU_FILE) as $cur_news)
