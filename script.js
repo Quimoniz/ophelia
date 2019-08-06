@@ -147,11 +147,13 @@ var Departures = {
 var Global = {
   BODY: undefined,
   fullscreenActivated: false,
+  tabs: undefined,
   init: function()
   {
     Global.BODY = document.getElementsByTagName("body")[0];
     var fullscreenEle = document.querySelector(".fullscreen_image");
     fullscreenEle.addEventListener("click", Global.fullscreenToggle);
+    Global.initializeTabs();
   },
   fullscreenToggle: function()
   {
@@ -182,6 +184,17 @@ var Global = {
       }
       Global.fullscreenActivated = true;
     }
+  },
+  initializeTabs: function()
+  {
+    var newsEles = document.querySelectorAll(".news_wrapper");
+    Global.tabs = new Tabbing(Global.BODY, ["100%", "15em"]);
+    for(var i = 0; i < newsEles.length; ++i)
+    {
+      Global.tabs.addTab(newsEles[i].getAttribute("title"), newsEles[i]);
+    }
+    var vocabEle = document.querySelector(".vocab_wrapper");
+    Global.tabs.addTab(vocabEle.getAttribute("title"), vocabEle);
   }
 };
 var Util = {

@@ -73,7 +73,10 @@ print("<meta http-equiv=\"refresh\" content=\"" . $refresh_seconds . "\" />");
 include('styles.css');
 ?>
 <script type="text/javascript">
-<?php include('script.js'); ?>
+<?php
+include('tabbing.js');
+include('script.js');
+?>
 </script>
 </head>
 <body>
@@ -117,7 +120,7 @@ function removeAllChilds(parentNode)
 <?php
 println("</div><div class=\"cleaner\"> &nbsp; </div>");
 $i = 0;
-echo "<div class=\"news_wrapper\">\n";
+echo "<div class=\"news_wrapper\" title=\"tagesschau.de\">\n";
 foreach(parseRss($TAGESSCHAU_FILE) as $cur_news)
 {
 	if(0 == $i)
@@ -138,7 +141,8 @@ if(0 < $i)
 	echo "</ul>\n";
 }
 echo "<div class=\"news_source\">Quelle tagesschau.de</div>";
-echo "<div class=\"cleaner\"></div>";
+echo "</div>";
+echo "<div class=\"news_wrapper\" title=\"Hacker News\">\n";
 $i = 0;
 foreach(parseRss($HACKERNEWS_FILE) as $cur_news)
 {
@@ -162,7 +166,9 @@ if(0 < $i)
 echo "<div class=\"news_source\">Quelle Hacker News</div>";
 echo "</div>\n";
 
-printTabBox();
+echo "<div class=\"vocab_wrapper\" title=\"Vokabeln\">";
+include('vocab.php');
+echo "</div>";
 ?>
 
 </body>

@@ -3,10 +3,10 @@
 // copyright: TU Dresden
 // author: Lars "Quimoniz" Jitschin
 
-function Tabbing(paramParentElement)
+function Tabbing(paramParentElement, paramTabSize)
 {
   this.parentElement = paramParentElement;
-  this.tabSize = ["50em", "14em"];
+  this.tabSize = paramTabSize;
   this.headArea = undefined;
   this.bodyArea = undefined;
   this.moreTabsEle = undefined;
@@ -30,7 +30,7 @@ function Tabbing(paramParentElement)
     this.headArea = this.parentElement.appendChild(this.headArea);
     this.bodyArea = this.parentElement.appendChild(this.bodyArea);
   };
-  this.addTab = function(tabName)
+  this.addTab = function(tabName, predefinedTabBody)
   {
     var newTabDescription = new TabDescription(this.bodyArea, tabName);
     if(((this.tabs.length + 1) * 270) < (this.headArea.offsetWidth - 50))
@@ -57,6 +57,14 @@ function Tabbing(paramParentElement)
       }
     }
     this.tabs.push(newTabDescription);
+    if(predefinedTabBody)
+    {
+      if(predefinedTabBody.parentNode)
+      {
+        predefinedTabBody.parentNode.removeChild(predefinedTabBody);
+      }
+      newTabDescription.mainEle.appendChild(predefinedTabBody);
+    }
     return newTabDescription.mainEle;
   };
   this.showMoreTabs = function(evtObj)
@@ -152,6 +160,7 @@ function TabHeading(paramTabbingObj, tabName)
   this.headingEle.style.padding = "5px 0px 0px 5px";
   this.headingEle.style.width = "250px";
   this.headingEle.style.height = "33px";
+  this.headingEle.style.cursor = "pointer";
   this.headingEle.style.borderLeft = "2px solid #606060";
   this.headingEle.style.borderTop  = "2px solid #606060";
   this.headingEle.style.borderRight= "2px solid #606060";

@@ -535,26 +535,3 @@ function printWeatherDetail($weather_row)
 	println('      <div class="weather_windspeed">' . str_replace(array("(", ")", " km/h"), array("", "", " km"), $weather_row->weatherWindSpeed) . ' Wind</div>');
 	println('    </div>');
 }
-
-function printTabBox()
-{
-	global $VOCAB_DB_HOST, $VOCAB_DB_USER, $VOCAB_DB_PASS, $VOCAB_DB_DB;
-	println('<div class="tabs_wrapper">');
-	println('  <div class="tabs_tabbing">');
-	println('    <div class="tabs_tab_heading">');
-	println('      Vocab');
-	println('    </div>');
-	println('    <div class="tabs_tab_heading">');
-	println('      foo');
-	println('    </div>');
-	println('    <div class="tabs_tab_heading">');
-	println('      bar');
-	println('    </div>');
-	println('    <div class="tabs_cleaner"> </div>');
-	println('  </div>');
-	println('  <div class="tabs_content">');
-	include('vocab.php');
-	println('  </div>');
-	println('</div>');
-	println('<div class="cleaner"> &nbsp; </div>');
-}
