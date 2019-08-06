@@ -244,14 +244,6 @@ function DepartureBlob()
     selfReference.departure = parsedDate;
   }
 }
-function playBeatles()
-{
-  var beatlesAudio = new Audio("beatles.mp3");
-  beatlesAudio.preload = "auto";
-  beatlesAudio.play();
-  setTimeout(playBeatles, 137000);
-}
 
 
-document.addEventListener("DOMContentLoaded", Departures.init);
 document.addEventListener("DOMContentLoaded", Global.init);
