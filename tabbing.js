@@ -69,20 +69,23 @@ function Tabbing(paramParentElement, paramTabSize)
   };
   this.showMoreTabs = function(evtObj)
   {
-    var x = this.moreTabsEle.offsetLeft + this.moreTabsEle.parentNode.offsetLeft + this.moreTabsEle.parentNode.parentNode.offsetLeft - 110,
-        y = this.moreTabsEle.offsetTop - 10;
-    if((x + 220) > window.innerWidth)
+    var position = this.getActualOffset(this.moreTabsEle);
+    position[0] -= 110;
+    position[1] -= 10;
+    if((position[0] + 220) > window.innerWidth)
     {
-      x = window.innerWidth - 220;
+      position[0] = window.innerWidth - 220;
     }
     var tabChooserEle = document.createElement("ul");
     tabChooserEle.style.backgroundColor = "#FFFFFF";
     tabChooserEle.style.position = "absolute";
     tabChooserEle.style.listStyle = "none";
-    tabChooserEle.style.left = x;
-    tabChooserEle.style.top = y;
-    tabChooserEle.style.width = 200;
+    tabChooserEle.style.left = position[0] + "px";
+    tabChooserEle.style.top = position[1] + "px";
+    tabChooserEle.style.width = "200px";
+    tabChooserEle.style.zIndex = 500;
     tabChooserEle.style.padding = "0px";
+    tabChooserEle.setAttribute("class", "tab_chooser_overlay");
     for(var i = 0; i < this.tabs.length; ++i)
     {
       var curLi = document.createElement("li");
@@ -92,12 +95,55 @@ function Tabbing(paramParentElement, paramTabSize)
       curLi.addEventListener("mouseover", function(evtObj) {evtObj.target.style.border = "2px solid #707070"; });
       curLi.addEventListener("mouseout", function(evtObj) {evtObj.target.style.border = "2px solid #FFFFFF"; });
       curLi.addEventListener("click", function(tabbingObj, curName) { return function(evtObj) {
+        var damnVeil = document.querySelector(".veil");
+        damnVeil.parentNode.removeChild(damnVeil);
         evtObj.target.parentNode.parentNode.removeChild(evtObj.target.parentNode);
         tabbingObj.focusTab(curName);
       }; }(this, this.tabs[i].name));
       tabChooserEle.appendChild(curLi);
     }
+    var veilEle = document.createElement("div");
+    veilEle.style.opacity = "0.3";
+    veilEle.style.backgroundColor = "#000000";
+    veilEle.style.position = "fixed";
+    veilEle.style.left = "0px";
+    veilEle.style.top = "0px";
+    veilEle.style.width = window.innerWidth + "px";
+    veilEle.style.height = window.innerHeight + "px";
+    veilEle.style.zIndex = 100;
+    veilEle.setAttribute("class", "veil");
+    veilEle.appendChild(document.createTextNode(" "));
+    veilEle.addEventListener("click", function() {
+      var curEle = document.querySelector(".veil");
+      curEle.parentNode.removeChild(curEle);
+      curEle = document.querySelector(".tab_chooser_overlay");
+      curEle.parentNode.removeChild(curEle);
+    });
+    
+    document.getElementsByTagName("body")[0].appendChild(veilEle);
     document.getElementsByTagName("body")[0].appendChild(tabChooserEle);
+  };
+  this.getActualOffset = function(ele)
+  {
+    var x = 0;
+    var y = 0;
+    x += ele.offsetLeft;
+    y += ele.offsetTop;
+    for(var curEle = ele; curEle.parentNode; curEle = curEle.parentNode)
+    {
+      if(curEle["tagName"] && "BODY" == curEle.tagName)
+      {
+        x += curEle.scrollLeft;
+        y += curEle.scrollTop;
+	break;
+      } else
+      {
+        x -= curEle.scrollLeft;
+        y -= curEle.scrollTop;
+      }
+    }
+    
+    return [x, y];
   };
   this.focusTab = function (tabName)
   {
