@@ -385,18 +385,20 @@ div.vocab_menuitem:hover {
 }
 .news_wrapper {
   float: left;
+  font-family: Sans;
 }
 .news_list
 {
   list-style-type: none;
   padding: 0px;
   margin: 0px;
-  font-size: 12pt;
+  font-size: 16pt;
 }
 .news_source {
   float: right;
 }
 .tabbing_header {
+  font-family: Sans;
   background-image: linear-gradient(to bottom, #ffffff 0px, #ffffa0 5px, #f0e000 20px);
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
