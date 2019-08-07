@@ -22,7 +22,6 @@ function Tabbing(paramParentElement, paramTabSize)
     this.headArea.style.height = "40px";
     this.headArea.style.width = this.tabSize[0];
     this.headArea.style.padding = "10px 0px 0px 0px";
-    this.headArea.style.backgroundColor = "#a0a0a0";
     this.bodyArea = document.createElement("div");
     this.bodyArea.setAttribute("class", "tabbing_body");
     this.bodyArea.style.width = this.tabSize[0];
@@ -201,7 +200,6 @@ function TabHeading(paramTabbingObj, tabName)
   this.headingEle = document.createElement("div");
   this.headingEle.style.display = "inline-block";
   this.headingEle.style.fontSize = "16pt";
-  this.headingEle.style.backgroundColor = "#c0c0c0";
   this.headingEle.style.margin = "0px 10px 0px 5px";
   this.headingEle.style.padding = "5px 0px 0px 5px";
   this.headingEle.style.width = "250px";
@@ -212,15 +210,16 @@ function TabHeading(paramTabbingObj, tabName)
   this.headingEle.style.borderRight= "2px solid #606060";
   this.headingEle.style.borderTopLeftRadius = "10px";
   this.headingEle.style.borderTopRightRadius = "10px";
+  this.headingEle.setAttribute("class", "tab_head tab_head_unfocused")
   this.eventHandler = undefined;
 
   this.focus = function()
   {
-    this.headingEle.style.backgroundColor = "#FFFFFF";
+    this.headingEle.setAttribute("class", "tab_head tab_head_focused")
   }
   this.defocus = function()
   {
-    this.headingEle.style.backgroundColor = "#c0c0c0";
+    this.headingEle.setAttribute("class", "tab_head tab_head_unfocused")
   }
   this.setTitle = function(newTitle)
   {

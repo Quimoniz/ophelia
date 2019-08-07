@@ -396,8 +396,25 @@ div.vocab_menuitem:hover {
 .news_source {
   float: right;
 }
+.tabbing_header {
+  background-image: linear-gradient(to bottom, #ffffff 0px, #ffffa0 5px, #f0e000 20px);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+.tab_head_focused {
+  background-color: #ffffd0;
+}
+.tab_head_unfocused {
+  background-color: #f0e000;
+  color: #606060;
+}
+.tabbing_body {
+  border-left: 2px solid #f0e000;
+  border-bottom: 2px solid #f0e000;
+  border-right: 2px solid #f0e000;
+}
 </style>
-<style type="text/css" media="all and (max-wdith: 400px)">
+<style type="text/css" media="all and (max-width: 400px)">
 .departure_cell-type pre {
   font: 2px/1px monospace;
 }
