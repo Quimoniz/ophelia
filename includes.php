@@ -51,11 +51,14 @@ function parseRss($RSS_FILE = "")
 {
 	$xmlText = file_get_contents($RSS_FILE);
 	$parsedXml = parseXml($xmlText);
-	$items_node_arr = $parsedXml->querySelectorAll("rss channel item");
 	$items_arr = array();
-	foreach($items_node_arr as $cur_item_node)
+	if($parsedXml)
 	{
-		$items_arr[] = new NewsItem($cur_item_node);
+		$items_node_arr = $parsedXml->querySelectorAll("rss channel item");
+		foreach($items_node_arr as $cur_item_node)
+		{
+			$items_arr[] = new NewsItem($cur_item_node);
+		}
 	}
 	return $items_arr;
 }

@@ -131,7 +131,7 @@ foreach(parseRss($TAGESSCHAU_FILE) as $cur_news)
 	echo "\n";
 
 	$i++;
-	if(7 == $i)
+	if($NEWS_SHOW_ITEMS_COUNT == $i)
 	{
 		break;
 	}
@@ -154,7 +154,7 @@ foreach(parseRss($HACKERNEWS_FILE) as $cur_news)
 	echo "\n";
 
 	$i++;
-	if(7 == $i)
+	if($NEWS_SHOW_ITEMS_COUNT == $i)
 	{
 		break;
 	}
