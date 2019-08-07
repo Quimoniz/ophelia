@@ -6,12 +6,7 @@ include('config.php');
 
 set_time_limit(30);
 $min_cache = 600; // affects automatic site reload
-$cacheAge=array( 'weather' => 0,
-                 'tagesschau' => 0,
-		 'hackernews' => 0);
-$maxCacheAge=array( 'weather' => (3600 - 5),
-                    'tagesschau' => (1800 - 5),
-                    'hackernews' => (1800 - 5));
+$cacheAge=array();
 $CONFIG_FILE='status-config.ini';
 if(file_exists($CONFIG_FILE))
 {
@@ -29,19 +24,14 @@ if(file_exists($CONFIG_FILE))
 $curTime = time();
 foreach($cacheAge as $curCacheName => $curCacheAge)
 {
-	if ( ($curTime - $curCacheAge) > $maxCacheAge[$curCacheName])
+	if (array_key_exists($curCacheName, $EXTERNAL_RESSOURCES)
+	&& ($curTime - $curCacheAge) > $EXTERNAL_RESSOURCES[$curCacheName]['caching_duration'])
 	{
 		$downloadingSucceeded = FALSE;
 		if('weather' == $curCacheName)
 		{
-			$downloadingSucceeded = downloadToFile($reqUrlWeather, $WEATHER_FILE);
-		} elseif('tagesschau' == $curCacheName)
-                {
-			$downloadingSucceeded = downloadToFile($reqUrlTagesschau, $TAGESSCHAU_FILE);
-		} elseif('hackernews' == $curCacheName)
-                {
-			$downloadingSucceeded = downloadToFile($reqUrlHackernews, $HACKERNEWS_FILE);
-                }
+			$downloadingSucceeded = downloadToFile($EXTERNAL_RESSOURCES[$curCacheName]['url'], $EXTERNAL_RESSOURCES[$curCacheName]['file']);
+		}
 		$cacheAge[$curCacheName] = $curTime;
 	}
 }
@@ -90,7 +80,7 @@ print(date("H:i:s"));
 </div>
 <?php
 
-printWeatherBox(parseWeatherReply($WEATHER_FILE), 2);
+printWeatherBox(parseWeatherReply($EXTERNAL_RESSOURCES['weather']['file']), 2);
 println("<div class=\"link_row\">");
 println("  <a href=\"https://www.wetteronline.de/regenradar/sachsen\">Regen-Radar</a>");
 println("  |");
@@ -119,52 +109,32 @@ function removeAllChilds(parentNode)
 </script>
 <?php
 println("</div><div class=\"cleaner\"> &nbsp; </div>");
-$i = 0;
-echo "<div class=\"news_wrapper\" title=\"tagesschau.de\">\n";
-foreach(parseRss($TAGESSCHAU_FILE) as $cur_news)
+foreach(array('tagesschau', 'hackernews') as $curNewsSource)
 {
-	if(0 == $i)
+	echo "<div class=\"news_wrapper\" title=\"" . $curNewsSource . "\">\n";
+	$i = 0;
+	foreach(parseRss($EXTERNAL_RESSOURCES[$curNewsSource]['file']) as $cur_news)
 	{
-		echo "<ul class=\"news_list\">\n";
+		if(0 == $i)
+		{
+			echo "<ul class=\"news_list\">\n";
+		}
+		echo '  <li class="news_listitem"><a href="' . $cur_news->link  . '">' . $cur_news->title . '</a></li>';
+		echo "\n";
+	
+		$i++;
+		if($NEWS_SHOW_ITEMS_COUNT == $i)
+		{
+			break;
+		}
 	}
-	echo '  <li class="news_listitem"><a href="' . $cur_news->link  . '">' . $cur_news->title . '</a></li>';
-	echo "\n";
-
-	$i++;
-	if($NEWS_SHOW_ITEMS_COUNT == $i)
+	if(0 < $i)
 	{
-		break;
+		echo "</ul>\n";
 	}
+	echo "<div class=\"news_source\">Quelle " . $EXTERNAL_RESSOURCES[$curNewsSource]['source'] . "</div>";
+	echo "</div>";
 }
-if(0 < $i)
-{
-	echo "</ul>\n";
-}
-echo "<div class=\"news_source\">Quelle tagesschau.de</div>";
-echo "</div>";
-echo "<div class=\"news_wrapper\" title=\"Hacker News\">\n";
-$i = 0;
-foreach(parseRss($HACKERNEWS_FILE) as $cur_news)
-{
-	if(0 == $i)
-	{
-		echo "<ul class=\"news_list\">\n";
-	}
-	echo '  <li class="news_listitem"><a href="' . $cur_news->link  . '">' . $cur_news->title . '</a></li>';
-	echo "\n";
-
-	$i++;
-	if($NEWS_SHOW_ITEMS_COUNT == $i)
-	{
-		break;
-	}
-}
-if(0 < $i)
-{
-	echo "</ul>\n";
-}
-echo "<div class=\"news_source\">Quelle Hacker News</div>";
-echo "</div>\n";
 
 echo "<div class=\"vocab_wrapper\" title=\"Vokabeln\">";
 include('vocab.php');
