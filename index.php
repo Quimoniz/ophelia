@@ -28,10 +28,7 @@ foreach($cacheAge as $curCacheName => $curCacheAge)
 	&& ($curTime - $curCacheAge) > $EXTERNAL_RESSOURCES[$curCacheName]['caching_duration'])
 	{
 		$downloadingSucceeded = FALSE;
-		if('weather' == $curCacheName)
-		{
-			$downloadingSucceeded = downloadToFile($EXTERNAL_RESSOURCES[$curCacheName]['url'], $EXTERNAL_RESSOURCES[$curCacheName]['file']);
-		}
+		$downloadingSucceeded = downloadToFile($EXTERNAL_RESSOURCES[$curCacheName]['url'], $EXTERNAL_RESSOURCES[$curCacheName]['file']);
 		$cacheAge[$curCacheName] = $curTime;
 	}
 }
