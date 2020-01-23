@@ -1,5 +1,5 @@
 <style type="text/css">
-body {
+html, body {
   background-color: #ffffff;
 }
 .global_options {
@@ -29,7 +29,7 @@ a:link,a:visited {
 .weather_column {
   background-color: #6090ff;
   background-image: linear-gradient( to bottom, #b8e8ff 0px, #6090ff 8px, #80a0ff 105px, #b0e0ff 130px, #6090ff 133px, #6090ff 135px, #b8e8ff 142px );
-  width: 324px;
+  width: 354px;
   padding: 3px;
   height: 135px;
   float: left;
@@ -61,7 +61,7 @@ a:link,a:visited {
 .weather_detail {
   background-color: #ffffff;
   margin: 3px;
-  width: 100px;
+  width: 110px;
   height: 100px;
   float: left;
   margin: 3px;
@@ -133,6 +133,10 @@ a:link,a:visited {
 }
 .weather_downfall {
   text-align: left;
+  width: 100px;
+  height: 20px;
+  overflow: visible;
+  white-space: nowrap;
 }
 .weather_windspeed {
   text-align: left;

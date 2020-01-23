@@ -136,39 +136,54 @@ function parseVvoReply($VVO_FILE = "")
 	}
 	return $arrDepartures;
 }
+function get_text_between($haystack, $needle_start, $needle_end, $offset = 0)
+{
+    $start_match = strpos($haystack, $needle_start, $offset);
+    $end_match = FALSE;
+    if(FALSE !== $start_match)
+    {
+        $start_match += strlen($needle_start);
+        $end_match = strpos($haystack, $needle_end, $start_match);
+        if(FALSE !== $end_match)
+        {
+            return substr($haystack, $start_match, $end_match - $start_match);
+        }
+    }
+    return "";
+}
 function parseWeatherReply($WEATHER_FILE)
 {
 	$arrWeather = array();
 	$weatherHtml = file_get_contents($WEATHER_FILE);
-	$posWeatherColumn = stripos($weatherHtml, "<div class=\"location-forecast-item item-detail wt-border-radius-6 wt-autolink forecast-today");
+	$posWeatherColumn = stripos($weatherHtml, "<div class=\"forecast-list list-standard\">");
 	while(false !== $posWeatherColumn)
 	{
-		$pos_cur_row = $posWeatherColumn;
-		$nextColumnEnd = stripos($weatherHtml, "<div class=\"forecast-detail-link\">", $pos_cur_row);
+		$pos_cur_row = $posWeatherColumn + 20;
+		$nextColumnEnd = stripos($weatherHtml, "<div class=\"forecast-item-day\">", $pos_cur_row);
 		if(false !== $nextColumnEnd)
 		{
 			$has_reached_end = false;
-			$cur_date = strip_surrounding_whitespace(strip_tags(get_line_matching_str($weatherHtml,"<div class=\"text-date\">", $pos_cur_row)));
-			$cur_weekday = strip_surrounding_whitespace(strip_tags(get_line_matching_str($weatherHtml, "<div class=\"text-day\">", $pos_cur_row)));
+			$cur_date = strip_surrounding_whitespace(get_text_between($weatherHtml,"<div class=\"text-date\">", "</div>", $pos_cur_row));
+			$cur_weekday = strip_surrounding_whitespace(get_text_between($weatherHtml, "<div class=\"text-day\">", "</div>", $pos_cur_row));
 			while(false === $has_reached_end)
 			{
-				$nextDetailBox = stripos($weatherHtml,"<div class=\"forecast-column column-1 wt-border-radius-6\">", $pos_cur_row + 30);
+				$nextDetailBox = stripos($weatherHtml,"<div class=\"forecast-column column-1 wt-border-radius-6\">", $pos_cur_row + 46);
 				if(false !== $nextDetailBox && $nextDetailBox < $nextColumnEnd)
 				{
 					$pos_cur_row = $nextDetailBox;
 					$cur_weather_row = new WeatherRow();
 					$cur_weather_row->weatherDate = $cur_date;
 					$cur_weather_row->weatherWeekday = $cur_weekday;
-					$cur_weather_row->weatherTime = strip_surrounding_whitespace(strip_tags(get_line_matching_str($weatherHtml,"<div class=\"forecast-column-date\">", $pos_cur_row)));
-					$cur_weather_row->weatherCloudiness = strip_surrounding_whitespace(strip_tags(get_line_matching_str($weatherHtml,"<div class=\"forecast-column-condition\">", $pos_cur_row)));
-					$cur_weather_row->weatherTemperature = strip_surrounding_whitespace(strip_tags(get_line_matching_str($weatherHtml,"<div class=\"forecast-text-temperature wt-font-light\">", $pos_cur_row)));
-					$cur_weather_row->weatherDownfall = strip_surrounding_whitespace(strip_tags(get_line_matching_str($weatherHtml,"<span>Risiko</span> <span class=\"wt-font-semibold\">", $pos_cur_row)));
+					$cur_weather_row->weatherTime = strip_surrounding_whitespace(get_text_between($weatherHtml,"<div class=\"forecast-column-date\">", "</div>", $pos_cur_row));
+					$cur_weather_row->weatherCloudiness = strip_surrounding_whitespace(get_text_between($weatherHtml,"<div class=\"forecast-column-condition\">", "</div>", $pos_cur_row));
+					$cur_weather_row->weatherTemperature = strip_surrounding_whitespace(get_text_between($weatherHtml,"<div class=\"forecast-text-temperature wt-font-light\">", "</div>", $pos_cur_row));
+					$cur_weather_row->weatherDownfall = strip_surrounding_whitespace(strip_tags(get_text_between($weatherHtml,"<span>Risiko</span> <span class=\"wt-font-semibold\">", "</div>", $pos_cur_row)));
 					$pos_wind = stripos($weatherHtml, "<div class=\"forecast-wind-text\">", $pos_cur_row);
 					if(false !== $pos_wind)
 					{
 						$pos_wind += 33;
-						$cur_weather_row->weatherWindDesc = strip_surrounding_whitespace(strip_tags(get_line_matching_str($weatherHtml, "<br/>", $pos_wind)));
-						$cur_weather_row->weatherWindSpeed = strip_surrounding_whitespace(strip_tags(get_line_matching_str($weatherHtml, "<span class=\"wt-font-semibold\">", $pos_wind)));
+						$cur_weather_row->weatherWindDesc = strip_surrounding_whitespace(get_text_between($weatherHtml, "<div class=\"forecast-wind-text\">", "<br>", $pes_wind));
+						$cur_weather_row->weatherWindSpeed = strip_surrounding_whitespace(get_text_between($weatherHtml, "<span class=\"wt-font-semibold\">", "</span>", $pos_wind));
 						
 					}
 					$arrWeather[] = $cur_weather_row;
@@ -180,7 +195,7 @@ function parseWeatherReply($WEATHER_FILE)
 		} else {
 			break;
 		}
-		$posWeatherColumn = stripos($weatherHtml, "<div class=\"location-forecast-item item-detail wt-border-radius-6 wt-autolink", $nextColumnEnd);
+		$posWeatherColumn = stripos($weatherHtml, "<div class=\"forecast-item-day\">", $nextColumnEnd);
 	}
 	return $arrWeather;
 }
