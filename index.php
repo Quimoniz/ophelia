@@ -7,6 +7,10 @@ include('config.php');
 set_time_limit(30);
 $min_cache = 600; // affects automatic site reload
 $cacheAge=array();
+foreach($EXTERNAL_RESSOURCES as $cur_key => $cur_value)
+{
+	$cacheAge[$cur_key] = 0;
+}
 $CONFIG_FILE='status-config.ini';
 if(file_exists($CONFIG_FILE))
 {
@@ -29,6 +33,7 @@ foreach($cacheAge as $curCacheName => $curCacheAge)
 	{
 		$downloadingSucceeded = FALSE;
 		$downloadingSucceeded = downloadToFile($EXTERNAL_RESSOURCES[$curCacheName]['url'], $EXTERNAL_RESSOURCES[$curCacheName]['file']);
+		note_error(null, "Downloading " . $EXTERNAL_RESSOURCES[$curCacheName]['url'] . " failed :(\n");
 		$cacheAge[$curCacheName] = $curTime;
 	}
 }
@@ -67,17 +72,79 @@ include('script.js');
 </script>
 </head>
 <body>
+<div class="hovering_clock_wrapper">
+<?php
+$right_now_timestamp = round(microtime(true) * 1000);
+echo '<div class="hovering_clock_time" timestamp_ms="' . $right_now_timestamp . '">';
+echo date("H:i");
+echo '</div>';
+?>
+<script type="text/javascript">
+var hovering_clock = {
+  wrapperEle: undefined,
+  descEle: undefined,
+  initTime: "",
+  initOffset: 0,
+  previousTimeString: undefined,
+  init: function()
+  {
+    hovering_clock.wrapperEle = document.querySelector(".hovering_clock_wrapper");
+    hovering_clock.descEle = document.querySelector(".hovering_clock_time");
+    hovering_clock.initTime = parseInt(hovering_clock.descEle.getAttribute("timestamp_ms"));
+    hovering_clock.initOffset = hovering_clock.initTime - (new Date()).getTime();
+    hovering_clock.previousTimeString = hovering_clock.descEle.firstChild.nodeValue;
+    hovering_clock.descEle.setAttribute("title", "Offset, from Server Time: " + (hovering_clock.initOffset / 1000 * -1) + " Sekunden");
+    hovering_clock.wrapperEle.style.left = (window.innerWidth / 2 - hovering_clock.wrapperEle.offsetWidth / 2) + "px";
+    hovering_clock.update();
+    setInterval(hovering_clock.update, 1000);
+  },
+  update: function()
+  {
+    var adjustedTime = new Date((new Date()).getTime() + hovering_clock.initOffset);
+    var timeTuples = [
+      adjustedTime.getHours(),
+      adjustedTime.getMinutes(),
+      adjustedTime.getSeconds()
+    ];
+    var timeAsString = "";
+    var firstTuple = true;
+    for(var curTuple of timeTuples)
+    {
+      if(firstTuple) firstTuple = false;
+      else           timeAsString += ":";
+      if(curTuple < 10) timeAsString += "0";
+      timeAsString += curTuple;
+    }
+    if(hovering_clock.previousTimeString != timeAsString)
+    {
+      hovering_clock.descEle.firstChild.nodeValue = timeAsString;
+    }
+  }
+};
+setTimeout(hovering_clock.init(), 1);
+</script>
+</div>
 <div class="global_options">
+<div class="global_last_update">
 letzte Aktualisierung:<br/>
 <?php
 print(date("H:i:s"));
 ?>
-<br/>
+</div>
+<div class="global_go_fullscreen">
 <img class="fullscreen_image" src="img/view-fullscreen.png" alt="Fullscreen" width="48" height="48" />
+</div>
 </div>
 <?php
 
-printWeatherBox(parseWeatherReply($EXTERNAL_RESSOURCES['weather']['file']), 2);
+// they changed their formatting yet again >.<
+// so this does not work anymore :(
+// printWeatherBox(parseWeatherReply($EXTERNAL_RESSOURCES['weather']['file']), 2);
+parse_openweathermap($EXTERNAL_RESSOURCES['openweathermap']['file']);
+
+println('<div style="clear:both;"></div>');
+printDepartureAPIBox('Tharandter Stra&szlig;e', $EXTERNAL_RESSOURCES['departures_tha']['file']);
+printDepartureAPIBox('Clara-Viebig-Stra&szlig;e', $EXTERNAL_RESSOURCES['departures_cvi']['file']);
 println("<div class=\"link_row\">");
 println("  <a href=\"https://www.wetteronline.de/regenradar/sachsen\">Regen-Radar</a>");
 println("  |");
@@ -106,6 +173,7 @@ function removeAllChilds(parentNode)
 </script>
 <?php
 println("</div><div class=\"cleaner\"> &nbsp; </div>");
+println("<div>");
 foreach(array('tagesschau', 'hackernews') as $curNewsSource)
 {
 	echo "<div class=\"news_wrapper\" title=\"" . $curNewsSource . "\">\n";
@@ -132,12 +200,41 @@ foreach(array('tagesschau', 'hackernews') as $curNewsSource)
 	echo "<div class=\"news_source\">Quelle " . $EXTERNAL_RESSOURCES[$curNewsSource]['source'] . "</div>";
 	echo "</div>";
 }
+println("</div>");
 
-echo "<div class=\"vocab_wrapper\" title=\"Vokabeln\">";
-include('vocab.php');
-echo "</div>";
+//echo "<div class=\"vocab_wrapper\" title=\"Vokabeln\">";
+//include('vocab.php');
+//echo "</div>";
+if(0 < count($error_store))
+{
+	echo "<div><details><summary>Fehlermeldungen (" . count($error_store) . ")</summary>\n";
+	echo "<table>\n";
+	foreach($error_store as $key => $value)
+	{
+		if(is_array($value))
+		{
+			echo "<tr>\n";
+			if(2 <= count($value))
+			{
+				echo "<td>" . htmlspecialchars($value[0]) . "</td><td>" . htmlspecialchars($value[1]) . "</td>";
+			} elseif(1 == count($value))
+			{
+				echo "<td></td><td>" . htmlspecialchars($value[1]) . "</td>";
+			}
+			echo "</tr>\n";
+		} else
+		{
+			echo "<tr>\n";
+			echo "<td></td><td>" . htmlspecialchars($value) . "</td>";
+			echo "</tr>\n";
+		}
+	}
+	echo "</table>\n";
+	echo "</details></div>\n";
+
+}
+
 ?>
-
 </body>
 </html>
 

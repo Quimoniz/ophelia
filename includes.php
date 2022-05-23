@@ -47,6 +47,12 @@ class NewsItem {
 		}
 	}
 }
+$error_store = array();
+function note_error($error_source, $error_msg)
+{
+	global $error_store;
+	array_push($error_store, array($error_source, $error_msg));
+}
 function parseRss($RSS_FILE = "")
 {
 	$xmlText = file_get_contents($RSS_FILE);
@@ -151,6 +157,82 @@ function get_text_between($haystack, $needle_start, $needle_end, $offset = 0)
     }
     return "";
 }
+function parse_openweathermap($WEATHER_JSON)
+{
+	if(file_exists($WEATHER_JSON))
+	{
+		try {
+			$json_weather = json_decode(file_get_contents($WEATHER_JSON), true);
+		} catch(Exception $e)
+		{
+			// don't to anything
+			$json_weather = null;
+		}
+	}
+	if( is_null($json_weather) )
+	{
+		note_error("OpenWeatherMap-Parsing", "<span title='Could not parse $WEATHER_JSON'>&#9888;</span>");
+		return;
+	}
+	if(array_key_exists('hourly', $json_weather))
+	{
+//TODO: enter the fields into the database
+//       furthermore read database and print out from database
+		$hourly_weather = $json_weather['hourly'];
+		//println('<div style="font-family: Sans, Sans-Serif; background-color: #d0d000; color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,1); border-radius: 20px; float: right; font-size: 90%; padding: 0em 1em 0em 1em;"><h3>OpenWeatherMap</h3>');
+		println('<div class="weather_box">');
+		$prev_date = "";
+                $cur_date = "";
+                for($i = 0; $i < count($hourly_weather); $i+=8)
+		{
+			$cur_hour = $hourly_weather[$i];
+			$prev_date = $cur_date;
+// API description here:
+//   https://openweathermap.org/current
+			$cur_time = $cur_hour['dt'];
+			$cur_temp = $cur_hour['temp'];
+			$cur_humidity = $cur_hour['humidity'];
+			$cur_wind_speed = $cur_hour['wind_speed']; // meters per second
+			$cur_wind_speed = round($cur_wind_speed * 3600 / 1000);
+			$cur_clouds_percent = $cur_hour['clouds'];
+			$cur_clouds_name = $cur_hour['weather'][0]['main'];
+			$cur_clouds_icon = $cur_hour['weather'][0]['icon'];
+			$cur_clouds_description = $cur_hour['weather'][0]['description'];
+			$cur_date = date('d.m.', $cur_time);
+			$cur_time = date('H:i', $cur_time);
+			if(0 !== strcmp($prev_date, $cur_date))
+			{
+				if(0 !== $i)
+				{
+					println('<div class="weather_cleaner"></div>');
+					println('</div>');
+				}
+				println('<div class="weather_column">');
+				println('<div class="weather_date">' . $cur_date . '</div>');
+			}
+			//println($cur_time . ", &nbsp; &nbsp; " . $cur_temp . " C, &nbsp; &nbsp;" . $cur_clouds_description . ", &nbsp; &nbsp; Wind: " . $cur_wind_speed . " km/h");
+			//println('<br/>');
+			$cloudinessClass = 'rainy';
+			if($cur_clouds_percent < 30) $cloudinessClass = 'sunny';
+			elseif($cur_clouds_percent < 60) $cloudinessClass = 'bright';
+			else $cloudinessClass = 'rainy';
+			println('    <div class="weather_detail ' .$cloudinessClass . '">'); //one of: sunny, bright, rainy, thunderstorm
+			println('      <div class="weather_time">' . $cur_time . '</div>');
+			println('      <div class="weather_cloudiness">' . $cur_clouds_name . '</div>');
+			println('      <div class="weather_temperature">' . round($cur_temp) . ' C</div>');
+			//println('      <div class="weather_downfall">' . str_replace("Risiko ","", $weather_row->weatherDownfall) . ' Regen</div>');
+			println('      <div class="weather_windspeed">' . $cur_wind_speed . ' km/h Wind</div>');
+			println('    </div>');
+		}
+		if ($i >= 3)
+		{
+			println('<div class="weather_cleaner"></div>');
+			println('</div>');
+		}
+		println('</div>');
+		//println("</div>");
+	}
+}
 function parseWeatherReply($WEATHER_FILE)
 {
 	$arrWeather = array();
@@ -182,7 +264,7 @@ function parseWeatherReply($WEATHER_FILE)
 					if(false !== $pos_wind)
 					{
 						$pos_wind += 33;
-						$cur_weather_row->weatherWindDesc = strip_surrounding_whitespace(get_text_between($weatherHtml, "<div class=\"forecast-wind-text\">", "<br>", $pes_wind));
+						$cur_weather_row->weatherWindDesc = strip_surrounding_whitespace(get_text_between($weatherHtml, "<div class=\"forecast-wind-text\">", "<br>", $pos_wind));
 						$cur_weather_row->weatherWindSpeed = strip_surrounding_whitespace(get_text_between($weatherHtml, "<span class=\"wt-font-semibold\">", "</span>", $pos_wind));
 						
 					}
@@ -338,12 +420,28 @@ if ( function_exists('curl_init')
 */
 	if (function_exists('file_put_contents') && function_exists('file_get_contents'))
 	{
-		if(is_writable($filename))
+		if(is_writable($filename) || !file_exists($filename))
 		{
-			file_put_contents($filename, file_get_contents($uri));
-			if (0 < filesize($filename)) {
-				$downloadSucceeded = true;
+			try{
+				$response_body = file_get_contents($uri);
+				$write_success = file_put_contents($filename, $response_body);
+				if (false !== $write_success && 0 < $write_success) {
+					$downloadSucceeded = true;
+				} else
+				{
+					note_error(__FUNCTION__, "Zero bytes written or I/O failure for file \"$filename\"");
+				}
+				unset($response_body);
+			} catch(Exception $e)
+			{
+				//do nothing
+				note_error(__FUNCTION__, "Error during file_get_contents() or file_put_contents() with URL \"$uri\" and filename \"$filename\".");
 			}
+		} else
+		{
+			$myid = array();
+			exec("id", $myid);
+			note_error(__FUNCTION__, "File \"$filename\" not writable. Id information: " . implode("\n", $myid));
 		}
 	} else {
 		print ('file_put_contents and file_get_contents not available<br/>');
@@ -410,13 +508,116 @@ function print_vehicle_symbol ($vehicleType, $httpUserAgent)
 </pre>
 <?php
 		}
-	} else if (false !== stripos($vehicleType, "Straßenbahn"))
+	} else if (false !== stripos($vehicleType, "Straßenbahn")
+	       || false !== stripos($vehicleType, "Tram"))
         {
 		//println("🚊");
 		println('<img src="img/travel/tram_small.jpg" width="60" height="32" alt="Tram" title="' . $vehicleType . '"/>');
 	}
 }
 
+function simplifiedVehicleClass($original_type)
+{
+	$vehicleClassNamesArr = array("Zug" => "train", "bus" => "bus", "Straßenbahn" => "tram", "Tram" => "tram", "CityBus" => "bus");
+	$vehicleClassName = '';
+	foreach($vehicleClassNamesArr as $searchString => $classString)
+	{
+		if(false !== stripos($original_type, $searchString))
+		{
+			$vehicleClassName .= ' vehicle_' . $classString;
+		}
+	}
+	return $vehicleClassName;
+}
+
+function printDepartureAPIBox($heading, $json_departures_file)
+{
+	$httpUserAgent = $_SERVER['HTTP_USER_AGENT'];
+	// use try/catch for JSON parsing errors
+	$json_departures = null;
+
+	if(file_exists($json_departures_file))
+	{
+		try {
+			$json_departures = json_decode(file_get_contents($json_departures_file), true);
+		} catch(Exception $e)
+		{
+			// don't to anything
+			$json_departures = null;
+		}
+	}
+	if( is_null($json_departures) )
+	{
+		println("<span title='Could not parse $json_departures_file'>&#9888;</span>");
+		return;
+	}
+	println('<div class="wrapper_departures">');
+	println('<h3 class="departures_heading">' . $heading . '</h3>');
+	// Development
+	//println('<pre>');
+	//print_r($json_departures);
+	//println('</pre>');
+	if(array_key_exists('Departures', $json_departures))
+	{
+		// doesn't help me here :(
+		// $local_time_offset = date_offset_get(); // should get offset by seconds
+		$offset_for_time = -7200000; //  -3600000 in winter, -7200000 in summer;
+		foreach($json_departures['Departures']  as $cur_departure_item)
+		{
+			println('  <div class="departure_row ' . simplifiedVehicleClass($cur_departure_item['Mot']) . '">');
+			println('    <div class="departure_cell-id">');
+			println('      ' . $cur_departure_item['LineName']);
+			println('    </div>');
+			println('    <div class="departure_cell-type">');
+			print_vehicle_symbol($cur_departure_item['Mot'], $httpUserAgent);
+			println('    </div>');
+			println('    <div class="departure_cell-destination">');
+			println('      ' . $cur_departure_item['Direction']);
+			println('    </div>');
+			//$cur_time = $cur_departure_item['RealTime'];
+			$matches = array();
+			$cur_time = $cur_departure_item['ScheduledTime'];
+			if(array_key_exists('RealTime', $cur_departure_item)) $cur_time = $cur_departure_item['RealTime'];
+			preg_match('/([0-9]+)/', $cur_time, $matches);
+			if(2 <= count($matches))
+			{
+				$cur_time = doubleval($matches[1]);
+				$cur_time = $cur_time + $offset_for_time;
+			} else
+			{
+				$cur_time = time();
+			}
+			$departure_time = $cur_time / 1000;
+			println('    <div class="departure_cell-departure" title="' . $departure_time . ' aus ' . $cur_departure_item['ScheduledTime'] . ' matches ' . implode(',', $matches) .  '" timestamp="' . $cur_time . '">');
+			print('        ⌚');
+			println(date('H:i', $departure_time));
+			println('    </div>');
+			println('    <div class="cleaner"> &nbsp; </div>');
+			println('  </div>');
+		}
+
+		/*
+			println('  <div class="departure_row ' . $vehicleClassName . '" onclick="Departures.loadDetails(this, \'' . $departure->detailUrl . '\')">');
+			println('    <div class="departure_cell-id">');
+			println('      ' . $departure->vehicleId);
+			println('    </div>');
+			println('    <div class="departure_cell-type">');
+			print_vehicle_symbol($departure->vehicleType, $httpUserAgent);
+			println('    </div>');
+	
+			println('    <div class="departure_cell-destination">');
+			println('      ' . $varDestination);
+			println('    </div>');
+			println('    <div class="departure_cell-departure">');
+			print('        ⌚');
+			println($departure->vehicleDeparture);
+			println('    </div>');
+			println('    <div class="cleaner"> &nbsp; </div>');
+			println('  </div>');
+		 */
+	}
+	println('</div>');
+}
 function printDepartureBox($httpUserAgent, $arrDepartures, $departureWhiteBlackList, $isWhitelist = true)
 {
 	println('<div class="wrapper_departures">');

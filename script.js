@@ -3,6 +3,9 @@ var Departures = {
   BODY: undefined,
   vvoList: undefined,
   departureRows: new Array(),
+  MAX_DEPARTURES_TO_SHOW: 8,
+  //offsetForTime: -3600000,
+  offsetForTime: 0,
   init: function()
   {
     Departures.BODY = document.getElementsByTagName("body")[0];
@@ -16,7 +19,8 @@ var Departures = {
     for(var i = 0, curRow, curCell, curBlob; i < Departures.vvoList.childNodes.length; ++i)
     {
       curRow = Departures.vvoList.childNodes[i];
-      if(curRow && curRow.nodeType && 1 == curRow.nodeType)
+      if(curRow && curRow.nodeType && 1 == curRow.nodeType
+      && -1 < curRow.className.indexOf("departure_row"))
       {
         curBlob = new DepartureBlob();
         curBlob.element = curRow;
@@ -39,11 +43,16 @@ var Departures = {
               curBlob.destination = Util.stripWhitespace(curCell.firstChild.nodeValue);
             } else if(0 == curCell.className.indexOf("departure_cell-departure"))
             {
-              curBlob.parseDeparture(curBlob, Util.stripWhitespace(curCell.firstChild.nodeValue));
+              //curBlob.parseDeparture(curBlob, Util.stripWhitespace(curCell.firstChild.nodeValue));
+              curBlob.departure = new Date(parseInt(curCell.getAttribute("timestamp")) + Departures.offsetForTime);
             }
 	  }
         }
         Departures.departureRows.push(curBlob);
+        if( i >= Departures.MAX_DEPARTURES_TO_SHOW)
+        {
+          curBlob.setVisibility(curBlob, false);
+        }
       }
     }
   },
@@ -61,10 +70,15 @@ var Departures = {
         curRow.element = undefined;
       } else if(curRow.element)
       {
+        curRow.setVisibility(curRow, i < Departures.MAX_DEPARTURES_TO_SHOW);
+
         var departureEle = curRow.element.querySelector(".departure_cell-departure");
         if(departureEle)
         {
           departureEle.removeChild(departureEle.firstChild);
+		//TODO: put this text generation in the DepartureBlob class/function
+		//      because the class itself should know about how to
+		//      represent it's own state/departure time
           departureEle.appendChild(document.createTextNode(Math.floor((curRow.departure.getTime() - (new Date()).getTime()) / 60000) + " Min"));
         } else console.log("couldnt find departure element");
       }
@@ -118,6 +132,8 @@ var Departures = {
     rowEle.style.height = "auto";
     rowEle.appendChild(detailBox);
   },
+//TODO: this needs to be brought up to date
+//        I suppose it doesn't work anymore presently
   loadDetails: function(eventSourceEle, detailUrl)
   {
     var req = new XMLHttpRequest();
@@ -193,8 +209,8 @@ var Global = {
     {
       Global.tabs.addTab(newsEles[i].getAttribute("title"), newsEles[i]);
     }
-    var vocabEle = document.querySelector(".vocab_wrapper");
-    Global.tabs.addTab(vocabEle.getAttribute("title"), vocabEle);
+    //var vocabEle = document.querySelector(".vocab_wrapper");
+    //Global.tabs.addTab(vocabEle.getAttribute("title"), vocabEle);
   }
 };
 var Util = {
@@ -243,7 +259,21 @@ function DepartureBlob()
     parsedDate.setMilliseconds(0);
     selfReference.departure = parsedDate;
   }
+  this.setVisibility = function(selfReference, shouldBeVisible)
+  {
+    if(selfReference.element)
+    {
+      if(shouldBeVisible)
+      {
+	selfReference.element.style.display = "block";
+      } else
+      {
+	selfReference.element.style.display = "none";
+      }
+    }
+  }
 }
 
 
 document.addEventListener("DOMContentLoaded", Global.init);
+document.addEventListener("DOMContentLoaded", Departures.init);
