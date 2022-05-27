@@ -47,6 +47,71 @@ class NewsItem {
 		}
 	}
 }
+function can_i_write_to($filepath)
+{
+	$statinfo = NULL;
+	$is_parent_folder = false;
+	if(file_exists($filepath))
+	{
+		$statinfo = stat($filepath);
+	} else
+	{
+		$statinfo = stat(dirname($filepath));
+		$is_parent_folder = true;
+	}
+	if($statinfo)
+	{
+		$file_owner = $statinfo['uid'];
+		$file_group = $statinfo['gid'];
+		$need_to_check_other = false;
+		if(posix_geteuid() === $file_owner)
+		{
+			// check for 0200
+			if($statinfo['mode'] & 128)
+			{
+				// check for 0100 if necessary
+				if(($is_parent_folder && ($statinfo['mode'] & 64)) || !$is_parent_folder)
+				{
+					return true;
+				}
+			}
+		} else
+		{
+			$all_my_gids = posix_getgroups();
+			foreach ($all_my_gids as $cur_gid)
+			{
+				if($cur_gid === $file_group)
+				{
+					// check for 0020
+					if($statinfo['mode'] & 16)
+					{
+						// check for 0010 if necessary
+						if(($is_parent_folder && ($statinfo['mode'] & 16)) || !$is_parent_folder)
+						{
+							return true;
+						}
+					}
+					break;
+				}
+			}
+			$need_to_check_other = true;
+		}
+		if($need_to_check_other)
+		{
+			// check for 0002
+			if($statinfo['mode'] & 2)
+			{
+				// check for 0001 if necessary
+				if(($is_parent_folder && ($statinfo['mode'] & 1)) || !$is_parent_folder)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
 $error_store = array();
 function note_error($error_source, $error_msg)
 {
