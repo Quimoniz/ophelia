@@ -1,20 +1,37 @@
 <?php
-$VVO_FILE= getcwd() . '/vvo.html';
 
 $adjustedLookupTime=time() + 180;
-$vvoDataDate=date("d.m.Y" , $adjustedLookupTime);
-$vvoDataTime=date("H%3\Ai", $adjustedLookupTime);
-# Weissdornstr:  33000943
-# Fetscherplatz: 33000062
-$reqUrlVvo='https://www.vvo-online.de/de/fahrplan/aktuelle-abfahrten-ankuenfte/abfahrten?stopid=33000062&date=' . $vvoDataDate . '&time=' . $vvoDataTime . '&arrival=false&mot=Train&mot=SuburbanRailway&mot=Tram&mot=CityBus&mot=Cableway&mot=Ferry&mot=HailedSharedTaxi';
+$ISO_DATE_STRING =  date('Y-m-d\TH:i:s.000\Z', $adjustedLookupTime);
+$MAX_NUMBER_RESULTS = 10;
 
+/* TODO: Make this modular 
+ *       in particular:
+ *       - the parser
+ *       - the view/template
+ *       - optional further goal: specify sorting order,
+ *           such that the views are being executed in that sorting order
+ */
 $EXTERNAL_RESSOURCES = array(
-	'weather' => array(
-		'url' => 'http://www.wetter.de/deutschland/wetter-dresden-18232486.html',
-		'file' => 'weather.html',
+	/*
+	 * Note: Latitude (also referred to as "N")
+	 *       and Longitude (also referred to as "E"),
+	 *       can be easily taken from Wikipedia, often
+	 *       found in the upper right corner of a city's
+	 *       Wikipedia article
+	 * Note: appid is to be acquired from openweathermap.org
+	 */
+	'openweathermap' => array(
+// https, i.e. using encryption, would be pointless for an open API...
+// Dresden: lat=51.049259&lon=13.73836
+// Berlin: lat=52.31&lon=13.24
+// replace the appid 123456789abcdef0123456789abcef12
+//   with the one you get from openweathermap
+		'url' => 'http://api.openweathermap.org/data/2.5/onecall?lat=51.049259&lon=13.73836&appid=123456789abcdef0123456789abcef12&mode=json&units=metric&lang=en&exclude=minutely,daily,alerts',
+		'file' => 'openweathermap.json',
 		'caching_duration' => 3600,
-		'source' => 'Wetter.de'
-	),
+		'source' => 'OpenWeatherMap',
+		'parser_func' => 'parse_openweathermap'
+        ),
 	'tagesschau' => array(
 		'url' => 'http://www.tagesschau.de/newsticker.rdf',
 		'file' => 'tagesschau.rdf',
@@ -26,7 +43,27 @@ $EXTERNAL_RESSOURCES = array(
 		'file' => 'hackernews.rss',
 		'caching_duration' => 1800,
 		'source' => 'Hacker News'
-	)
+	),
+	// old url, I used:
+	// $reqUrlVvo='https://www.vvo-online.de/de/fahrplan/aktuelle-abfahrten-ankuenfte/abfahrten?stopid=33000062&date=' . $vvoDataDate . '&time=' . $vvoDataTime . '&arrival=false&mot=Train&mot=SuburbanRailway&mot=Tram&mot=CityBus&mot=Cableway&mot=Ferry&mot=HailedSharedTaxi';
+	// I got the url and the parameters from here:
+	//   https://github.com/kiliankoe/dvbjs/blob/master/packages/dvbjs/src/monitor.ts
+	//   thanks! :)
+	// One can query for the stopid with a request like this:
+ 	// https://www.vvo-online.de/pointfinder/index?query=NAME OF THE STOP HERE&stopsonly=true&regionalonly=false&stopshortcuts=true
+ 	//
+ 	//
+	// 33000943 => Weissdornstr  
+	// 33000062 => Fetscherplatz 
+	// 33000144 => Tharandter Strasse
+	// 33000696 => Bonhoefferplatz
+	// 33000155 => Clara-Viebig-Strasse
+	'departures_tha' => array(
+		'url' => 'https://webapi.vvo-online.de/dm?format=json&stopid=33000144&time=' . $ISO_DATE_STRING . '&isarrival=false&limit=' . $MAX_NUMBER_RESULTS . '&shorttermchanges=true&mentzonly=false',
+		'file' => 'vvo_departures_tha.json',
+		'caching_duration' => 600,
+		'source' => 'VVO API'
+	),
 );
 $NEWS_SHOW_ITEMS_COUNT = 5;
 
@@ -39,5 +76,6 @@ $ENVIRON_DB_HOST = "localhost";
 $ENVIRON_DB_USER = "example";
 $ENVIRON_DB_PASS = "example";
 $ENVIRON_DB_DB   = "example";
+
 
 ?>
