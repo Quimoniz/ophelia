@@ -3,6 +3,8 @@ header('Content-Type: text/html; charset=utf-8');
 include('includes.php');
 include('config.php');
 
+$CACHE_PREFIX = 'cache/';
+
 
 set_time_limit(30);
 $min_cache = 600; // affects automatic site reload
@@ -11,7 +13,7 @@ foreach($EXTERNAL_RESSOURCES as $cur_key => $cur_value)
 {
 	$cacheAge[$cur_key] = 0;
 }
-$CONFIG_FILE='status-config.ini';
+$CONFIG_FILE = $CACHE_PREFIX . 'status-config.ini';
 if(file_exists($CONFIG_FILE))
 {
 	$readOutConfig=parse_ini_file($CONFIG_FILE, true);

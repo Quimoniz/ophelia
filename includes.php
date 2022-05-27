@@ -392,7 +392,10 @@ function getDomNodeByTagAndClass ( $parentNode, $tagName,  $className) {
 }
 function downloadToFile ( $uri, $filename)
 {
+	global $CACHE_PREFIX;
 	$downloadSucceeded = false;
+
+	$filename = $CACHE_PREFIX . $filename;
 	
 /* CURL does not work here.  No need to bother with it
 if ( function_exists('curl_init') 
@@ -429,7 +432,7 @@ if ( function_exists('curl_init')
 					$downloadSucceeded = true;
 				} else
 				{
-					note_error(__FUNCTION__, "Zero bytes written or I/O failure for file \"$filename\"");
+					note_error(__FUNCTION__, "Wanted to write " . strlen("$response_body") . " Bytes, but no bytes could be written. I/O failure for file \"$filename\"");
 				}
 				unset($response_body);
 			} catch(Exception $e)
