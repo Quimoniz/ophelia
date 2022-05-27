@@ -55,18 +55,24 @@ function note_error($error_source, $error_msg)
 }
 function parseRss($RSS_FILE = "")
 {
-	$xmlText = file_get_contents($RSS_FILE);
-	$parsedXml = parseXml($xmlText);
-	$items_arr = array();
-	if($parsedXml)
+	if(file_exists($RSS_FILE))
 	{
-		$items_node_arr = $parsedXml->querySelectorAll("rss channel item");
-		foreach($items_node_arr as $cur_item_node)
+		$xmlText = file_get_contents($RSS_FILE);
+		$parsedXml = parseXml($xmlText);
+		$items_arr = array();
+		if($parsedXml)
 		{
-			$items_arr[] = new NewsItem($cur_item_node);
+			$items_node_arr = $parsedXml->querySelectorAll("rss channel item");
+			foreach($items_node_arr as $cur_item_node)
+			{
+				$items_arr[] = new NewsItem($cur_item_node);
+			}
 		}
+		return $items_arr;
+	} else
+	{
+		return array();
 	}
-	return $items_arr;
 }
 function parseVvoReply($VVO_FILE = "")
 {

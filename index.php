@@ -1,7 +1,14 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
 include('includes.php');
-include('config.php');
+if(@file_exists('config.php'))
+{
+	include('config.php');
+} else
+{
+	echo "<h1>config.php does not exist!</h1>\n";
+	echo "<h1>Please rename the config.php.example and adjust it to your needs</h1>\n";
+}
 
 $CACHE_PREFIX = 'cache/';
 
