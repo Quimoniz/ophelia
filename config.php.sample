@@ -62,7 +62,9 @@ $EXTERNAL_RESSOURCES = array(
 		'url' => 'https://webapi.vvo-online.de/dm?format=json&stopid=33000144&time=' . $ISO_DATE_STRING . '&isarrival=false&limit=' . $MAX_NUMBER_RESULTS . '&shorttermchanges=true&mentzonly=false',
 		'file' => 'vvo_departures_tha.json',
 		'caching_duration' => 600,
-		'source' => 'VVO API'
+		'source' => 'VVO API',
+		'title' => 'Abfahrten ab Tharandter Strasse',
+		'render_func' => 'printDepartureAPIBox'
 	),
 );
 $NEWS_SHOW_ITEMS_COUNT = 5;
