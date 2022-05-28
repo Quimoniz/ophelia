@@ -154,11 +154,18 @@ print(date("H:i:s"));
 // they changed their formatting yet again >.<
 // so this does not work anymore :(
 // printWeatherBox(parseWeatherReply($EXTERNAL_RESSOURCES['weather']['file']), 2);
-parse_openweathermap($EXTERNAL_RESSOURCES['openweathermap']['file']);
+//parse_openweathermap($EXTERNAL_RESSOURCES['openweathermap']['file']);
 
 println('<div style="clear:both;"></div>');
-printDepartureAPIBox('Tharandter Stra&szlig;e', $EXTERNAL_RESSOURCES['departures_tha']['file']);
-printDepartureAPIBox('Clara-Viebig-Stra&szlig;e', $EXTERNAL_RESSOURCES['departures_cvi']['file']);
+//printDepartureAPIBox('Tharandter Stra&szlig;e', $EXTERNAL_RESSOURCES['departures_tha']['file']);
+//printDepartureAPIBox('Clara-Viebig-Stra&szlig;e', $EXTERNAL_RESSOURCES['departures_cvi']['file']);
+foreach($EXTERNAL_RESSOURCES as $cur_res)
+{
+	if(array_key_exists('render_func', $cur_res))
+	{
+		$cur_res['render_func']($cur_res);
+	}
+}
 println("<div class=\"link_row\">");
 println("  <a href=\"https://www.wetteronline.de/regenradar/sachsen\">Regen-Radar</a>");
 println("  |");

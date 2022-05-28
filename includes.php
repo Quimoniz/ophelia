@@ -112,6 +112,18 @@ function can_i_write_to($filepath)
 	return false;
 }
 
+function get_filecache($shortpath_to_file)
+{
+	global $CACHE_PREFIX;
+
+	$actual_path = $CACHE_PREFIX . $shortpath_to_file;
+	if(file_exists($actual_path))
+	{
+		return file_get_contents($actual_path);
+	}
+	return '';
+}
+
 $error_store = array();
 function note_error($error_source, $error_msg)
 {
@@ -120,24 +132,18 @@ function note_error($error_source, $error_msg)
 }
 function parseRss($RSS_FILE = "")
 {
-	if(file_exists($RSS_FILE))
+	$xmlText = get_filecache($RSS_FILE);
+	$parsedXml = parseXml($xmlText);
+	$items_arr = array();
+	if($parsedXml)
 	{
-		$xmlText = file_get_contents($RSS_FILE);
-		$parsedXml = parseXml($xmlText);
-		$items_arr = array();
-		if($parsedXml)
+		$items_node_arr = $parsedXml->querySelectorAll("rss channel item");
+		foreach($items_node_arr as $cur_item_node)
 		{
-			$items_node_arr = $parsedXml->querySelectorAll("rss channel item");
-			foreach($items_node_arr as $cur_item_node)
-			{
-				$items_arr[] = new NewsItem($cur_item_node);
-			}
+			$items_arr[] = new NewsItem($cur_item_node);
 		}
-		return $items_arr;
-	} else
-	{
-		return array();
 	}
+	return $items_arr;
 }
 function parseVvoReply($VVO_FILE = "")
 {
@@ -230,15 +236,12 @@ function get_text_between($haystack, $needle_start, $needle_end, $offset = 0)
 }
 function parse_openweathermap($WEATHER_JSON)
 {
-	if(file_exists($WEATHER_JSON))
+	try {
+		$json_weather = json_decode(get_filecache($WEATHER_JSON), true);
+	} catch(Exception $e)
 	{
-		try {
-			$json_weather = json_decode(file_get_contents($WEATHER_JSON), true);
-		} catch(Exception $e)
-		{
-			// don't to anything
-			$json_weather = null;
-		}
+		// don't to anything
+		$json_weather = null;
 	}
 	if( is_null($json_weather) )
 	{
@@ -604,21 +607,18 @@ function simplifiedVehicleClass($original_type)
 	return $vehicleClassName;
 }
 
-function printDepartureAPIBox($heading, $json_departures_file)
+function printDepartureAPIBox($res_description)//$heading, $json_departures_file)
 {
 	$httpUserAgent = $_SERVER['HTTP_USER_AGENT'];
 	// use try/catch for JSON parsing errors
 	$json_departures = null;
 
-	if(file_exists($json_departures_file))
+	try {
+		$json_departures = json_decode(get_filecache($res_description['file']), true);
+	} catch(Exception $e)
 	{
-		try {
-			$json_departures = json_decode(file_get_contents($json_departures_file), true);
-		} catch(Exception $e)
-		{
-			// don't to anything
-			$json_departures = null;
-		}
+		// don't to anything
+		$json_departures = null;
 	}
 	if( is_null($json_departures) )
 	{
@@ -626,7 +626,7 @@ function printDepartureAPIBox($heading, $json_departures_file)
 		return;
 	}
 	println('<div class="wrapper_departures">');
-	println('<h3 class="departures_heading">' . $heading . '</h3>');
+	println('<h3 class="departures_heading">' . (array_key_exists('title', $res_description) ? $res_description['title'] : '') . '</h3>');
 	// Development
 	//println('<pre>');
 	//print_r($json_departures);
