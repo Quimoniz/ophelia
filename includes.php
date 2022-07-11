@@ -234,10 +234,10 @@ function get_text_between($haystack, $needle_start, $needle_end, $offset = 0)
     }
     return "";
 }
-function parse_openweathermap($WEATHER_JSON)
+function parse_openweathermap($res_description)//$WEATHER_JSON)
 {
 	try {
-		$json_weather = json_decode(get_filecache($WEATHER_JSON), true);
+		$json_weather = json_decode(get_filecache($res_description['file']), true);
 	} catch(Exception $e)
 	{
 		// don't to anything
@@ -248,30 +248,146 @@ function parse_openweathermap($WEATHER_JSON)
 		note_error("OpenWeatherMap-Parsing", "<span title='Could not parse $WEATHER_JSON'>&#9888;</span>");
 		return;
 	}
+	$db_handle = new mysqli($res_description['secrets']['DBHOST'],
+				$res_description['secrets']['DBUSER'],
+				$res_description['secrets']['DBPASS'],
+				$res_description['secrets']['DBDB']);
+	if ($db_handle && ! ( $db_handle -> connect_errno ) ) {
+		//everythin is well
+	} else
+	{
+		note_error(__FUNCTION__, "Couldn't connect to database");
+		echo "\n\n\nDB ERROR\n\n\n";
+	}
+
+
 	if(array_key_exists('hourly', $json_weather))
 	{
+/*
+| openweathermap_forecast | CREATE TABLE `openweathermap_forecast` (
+  `dt` bigint(20) DEFAULT NULL,
+  `temp` decimal(7,3) DEFAULT NULL,
+  `feels_like` decimal(7,3) DEFAULT NULL,
+  `pressure` decimal(7,3) DEFAULT NULL,
+  `humidity` decimal(7,3) DEFAULT NULL,
+  `dew_point` decimal(7,3) DEFAULT NULL,
+  `uvi` decimal(7,3) DEFAULT NULL,
+  `clouds` decimal(7,3) DEFAULT NULL,
+  `visibility` decimal(10,3) DEFAULT NULL,
+  `wind_speed` decimal(7,3) DEFAULT NULL,
+  `wind_deg` decimal(7,3) DEFAULT NULL,
+  `wind_gust` decimal(7,3) DEFAULT NULL,
+  `weather_id` int(11) DEFAULT NULL,
+  `weather_name` varchar(255) DEFAULT NULL,
+  `weather_description` varchar(255) DEFAULT NULL,
+  `weather_icon` varchar(255) DEFAULT NULL,
+  `pop` decimal(7,3) DEFAULT NULL,
+  `rain` decimal(7,3) DEFAULT NULL,
+  KEY `dt` (`dt`),
+  KEY `dt_2` (`dt`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 |
+*/
 //TODO: enter the fields into the database
 //       furthermore read database and print out from database
 		$hourly_weather = $json_weather['hourly'];
+		$combined_insert = 'REPLACE INTO openweathermap_forecast VALUES ';
+		$is_first_entry = true;
+		for($i = 0; $i < count($hourly_weather); $i++)
+		{
+			$cur_hour = $hourly_weather[$i];
+			if(array_key_exists('dt', $cur_hour))
+			{
+				if($is_first_entry)
+				{
+					$is_first_entry = false;
+				} else
+				{
+					$combined_insert .= ', ';
+				}
+				$combined_insert .= sprintf("(%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+					$cur_hour['dt'],
+					array_key_exists('temp', $cur_hour) ? $cur_hour['temp'] : "NULL",
+					array_key_exists('feels_like', $cur_hour) ? $cur_hour['feels_like'] : "NULL",
+					array_key_exists('pressure', $cur_hour) ? $cur_hour['pressure'] : "NULL",
+					array_key_exists('humidity', $cur_hour) ? $cur_hour['humidity'] : "NULL",
+					array_key_exists('dew_point', $cur_hour) ? $cur_hour['dew_point'] : "NULL",
+					array_key_exists('uvi', $cur_hour) ? $cur_hour['uvi'] : "NULL",
+					array_key_exists('clouds', $cur_hour) ? $cur_hour['clouds'] : "NULL",
+					array_key_exists('visibility', $cur_hour) ? $cur_hour['visibility'] : "NULL",
+					array_key_exists('wind_speed', $cur_hour) ? $cur_hour['wind_speed'] : "NULL",
+					array_key_exists('wind_deg', $cur_hour) ? $cur_hour['wind_deg'] : "NULL",
+					array_key_exists('wind_gust', $cur_hour) ? $cur_hour['wind_gust'] : "NULL",
+					array_key_exists('weather', $cur_hour)
+					 && array_key_exists(0, $cur_hour['weather'])
+					 && array_key_exists('id', $cur_hour['weather'][0])
+					 ? $cur_hour['weather'][0]['id'] : "NULL",
+					array_key_exists('weather', $cur_hour)
+					 && array_key_exists(0, $cur_hour['weather'])
+					 && array_key_exists('main', $cur_hour['weather'][0])
+					 ? ("'" . $cur_hour['weather'][0]['main'] . "'") : "NULL",
+					array_key_exists('weather', $cur_hour)
+					 && array_key_exists(0, $cur_hour['weather'])
+					 && array_key_exists('description', $cur_hour['weather'][0])
+					 ? ("'" . $cur_hour['weather'][0]['description'] . "'") : "NULL",
+					array_key_exists('weather', $cur_hour)
+					 && array_key_exists(0, $cur_hour['weather'])
+					 && array_key_exists('icon', $cur_hour['weather'][0])
+					 ? ("'" . $cur_hour['weather'][0]['icon'] . "'") : "NULL",
+					array_key_exists('pop', $cur_hour) ? $cur_hour['pop'] : "NULL",
+					array_key_exists('rain', $cur_hour) ? $cur_hour['rain'] : "NULL"
+				);
+			}
+		}
+		$combined_insert .= ";";
+		if($db_handle) $result = $db_handle->query($combined_insert);
+		//$db_handle = new mysqli ($VOCAB_DB_HOST, $VOCAB_DB_USER, $VOCAB_DB_PASS, $VOCAB_DB_DB);
+/*
+group in 3 hour-intervals, show min-avg-max temperature for these intervals:
+
+SELECT FROM_UNIXTIME((FLOOR((dt - 1657576800) / (3600*3)) * (3600 * 3)) + 1657576800) AS 'mytime', MIN(temp), AVG(temp), MAX(temp) FROM openweathermap_forecast WHERE dt >= 1657576800 AND dt <= 1657746000 GROUP BY mytime;
+*/
+		file_put_contents('lengthy-sql-replace.sql', $combined_insert);
+		//echo "<pre>";
+		//print_r($combined_insert);
+		//echo "</pre>";
+
 		//println('<div style="font-family: Sans, Sans-Serif; background-color: #d0d000; color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,1); border-radius: 20px; float: right; font-size: 90%; padding: 0em 1em 0em 1em;"><h3>OpenWeatherMap</h3>');
+	}
+}
+function print_openweathermap($res_description)
+{
+	$db_handle = new mysqli($res_description['secrets']['DBHOST'],
+				$res_description['secrets']['DBUSER'],
+				$res_description['secrets']['DBPASS'],
+				$res_description['secrets']['DBDB']);
+	if (!$db_handle || ( $db_handle -> connect_errno ) ) {
+		note_error(__FUNCTION__, "Couldn't connect to database");
+	} else
+	{
+		$ts_today = strtotime("today",time());
+		$ts_end = $ts_today + 86400*2 - 3600;
+		$result = $db_handle->query("SELECT ((FLOOR((dt - $ts_today) / (3600*8)) * (3600 * 8)) + $ts_today) AS 'mytime', AVG(temp) AS 'temp', AVG('humidity') AS 'humidity', MAX('wind_speed') AS 'wind_speed', AVG('clouds') AS 'clouds', GROUP_CONCAT('weather_name') AS 'weather_name', GROUP_CONCAT('weather_icon') AS 'weather_icon', GROUP_CONCAT('weather_description') AS 'weather_description' FROM openweathermap_forecast WHERE dt >= $ts_today AND dt <= $ts_end GROUP BY mytime");
 		println('<div class="weather_box">');
 		$prev_date = "";
                 $cur_date = "";
-                for($i = 0; $i < count($hourly_weather); $i+=8)
+                //for($i = 0; $i < count($hourly_weather); $i+=8)
+		//{
+		$cur_hour = null;
+		while($cur_hour = $result->fetch_assoc())
 		{
-			$cur_hour = $hourly_weather[$i];
+			//$cur_hour = $hourly_weather[$i];
 			$prev_date = $cur_date;
 // API description here:
 //   https://openweathermap.org/current
-			$cur_time = $cur_hour['dt'];
+			$cur_time = $cur_hour['mytime'];
 			$cur_temp = $cur_hour['temp'];
 			$cur_humidity = $cur_hour['humidity'];
 			$cur_wind_speed = $cur_hour['wind_speed']; // meters per second
 			$cur_wind_speed = round($cur_wind_speed * 3600 / 1000);
 			$cur_clouds_percent = $cur_hour['clouds'];
-			$cur_clouds_name = $cur_hour['weather'][0]['main'];
-			$cur_clouds_icon = $cur_hour['weather'][0]['icon'];
-			$cur_clouds_description = $cur_hour['weather'][0]['description'];
+			$cur_clouds_name = $cur_hour['weather_name'];
+			$cur_clouds_icon = $cur_hour['weather_icon'];
+			$cur_clouds_description = $cur_hour['weather_description'];
 			$cur_date = date('d.m.', $cur_time);
 			$cur_time = date('H:i', $cur_time);
 			if(0 !== strcmp($prev_date, $cur_date))
@@ -304,7 +420,7 @@ function parse_openweathermap($WEATHER_JSON)
 			println('</div>');
 		}
 		println('</div>');
-		//println("</div>");
+	//println("</div>");
 	}
 }
 function parseWeatherReply($WEATHER_FILE)

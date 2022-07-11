@@ -47,8 +47,23 @@ foreach($cacheAge as $curCacheName => $curCacheAge)
 	{
 		$downloadingSucceeded = FALSE;
 		$downloadingSucceeded = downloadToFile($EXTERNAL_RESSOURCES[$curCacheName]['url'], $EXTERNAL_RESSOURCES[$curCacheName]['file']);
-		note_error(null, "Downloading " . $EXTERNAL_RESSOURCES[$curCacheName]['url'] . " failed :(\n");
-		$cacheAge[$curCacheName] = $curTime;
+		if(!$downloadingSucceeded)
+		{
+			note_error(null, "Downloading " . $EXTERNAL_RESSOURCES[$curCacheName]['url'] . " failed :(\n");
+		} else
+		{
+			$cacheAge[$curCacheName] = $curTime;
+			if(array_key_exists('parser_func', $EXTERNAL_RESSOURCES[$curCacheName]))
+			{
+				try {
+					$EXTERNAL_RESSOURCES[$curCacheName]['parser_func']($EXTERNAL_RESSOURCES[$curCacheName]);
+				}  catch(Exception $exc)
+				{
+					note_error(null, "Exception upon calling parser_func '". $EXTERNAL_RESSOURCES['parser_func'] . "' for ressource '" . $curCacheName . "'");
+				}
+			}
+			
+		}
 	}
 }
 $cacheText = "[Cache]\n";
@@ -165,6 +180,7 @@ foreach($EXTERNAL_RESSOURCES as $cur_res)
 	{
 		$cur_res['render_func']($cur_res);
 	}
+	println('<div style="clear:both;"></div>');
 }
 println("<div class=\"link_row\">");
 println("  <a href=\"https://www.wetteronline.de/regenradar/sachsen\">Regen-Radar</a>");
@@ -194,34 +210,38 @@ function removeAllChilds(parentNode)
 </script>
 <?php
 println("</div><div class=\"cleaner\"> &nbsp; </div>");
-println("<div>");
-foreach(array('tagesschau', 'hackernews') as $curNewsSource)
+	println("<div>");
+function printNewsTab($res_description)
 {
-	echo "<div class=\"news_wrapper\" title=\"" . $curNewsSource . "\">\n";
-	$i = 0;
-	foreach(parseRss($EXTERNAL_RESSOURCES[$curNewsSource]['file']) as $cur_news)
-	{
-		if(0 == $i)
+	global $NEWS_SHOW_ITEMS_COUNT;
+	//foreach(array('tagesschau', 'hackernews') as $curNewsSource)
+	//{
+		echo "<div class=\"news_wrapper\" title=\"" . $res_description['title'] . "\">\n";
+		$i = 0;
+		foreach(parseRss($res_description['file']) as $cur_news)
 		{
-			echo "<ul class=\"news_list\">\n";
+			if(0 == $i)
+			{
+				echo "<ul class=\"news_list\">\n";
+			}
+			echo '  <li class="news_listitem"><a href="' . $cur_news->link  . '">' . $cur_news->title . '</a></li>';
+			echo "\n";
+		
+			$i++;
+			if($NEWS_SHOW_ITEMS_COUNT == $i)
+			{
+				break;
+			}
 		}
-		echo '  <li class="news_listitem"><a href="' . $cur_news->link  . '">' . $cur_news->title . '</a></li>';
-		echo "\n";
-	
-		$i++;
-		if($NEWS_SHOW_ITEMS_COUNT == $i)
+		if(0 < $i)
 		{
-			break;
+			echo "</ul>\n";
 		}
-	}
-	if(0 < $i)
-	{
-		echo "</ul>\n";
-	}
-	echo "<div class=\"news_source\">Quelle " . $EXTERNAL_RESSOURCES[$curNewsSource]['source'] . "</div>";
-	echo "</div>";
+		echo "<div class=\"news_source\">Quelle " . $res_description['source'] . "</div>";
+		echo "</div>";
+	//}
 }
-println("</div>");
+	println("</div>");
 
 //echo "<div class=\"vocab_wrapper\" title=\"Vokabeln\">";
 //include('vocab.php');
