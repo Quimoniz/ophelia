@@ -366,13 +366,14 @@ function print_openweathermap($res_description)
 	{
 		$ts_today = strtotime("today",time());
 		$ts_end = $ts_today + 86400*2 - 3600;
-		$result = $db_handle->query("SELECT ((FLOOR((dt - $ts_today) / (3600*8)) * (3600 * 8)) + $ts_today) AS 'mytime', AVG(temp) AS 'temp', AVG('humidity') AS 'humidity', MAX('wind_speed') AS 'wind_speed', AVG('clouds') AS 'clouds', GROUP_CONCAT('weather_name') AS 'weather_name', GROUP_CONCAT('weather_icon') AS 'weather_icon', GROUP_CONCAT('weather_description') AS 'weather_description' FROM openweathermap_forecast WHERE dt >= $ts_today AND dt <= $ts_end GROUP BY mytime");
+		$result = $db_handle->query("SELECT ((FLOOR((dt - $ts_today) / (3600*8)) * (3600 * 8)) + $ts_today) AS 'mytime', MIN(temp) AS 'temp_min', AVG(temp) AS 'temp_avg', MAX(temp) AS 'temp_max', AVG(humidity) AS 'humidity', MAX(wind_speed) AS 'wind_speed', AVG(clouds) AS 'clouds', GROUP_CONCAT(weather_name) AS 'weather_name', GROUP_CONCAT(weather_icon) AS 'weather_icon', GROUP_CONCAT(weather_description) AS 'weather_description' FROM openweathermap_forecast WHERE dt >= $ts_today AND dt <= $ts_end GROUP BY mytime");
 		println('<div class="weather_box">');
 		$prev_date = "";
                 $cur_date = "";
                 //for($i = 0; $i < count($hourly_weather); $i+=8)
 		//{
 		$cur_hour = null;
+		$i = 0;
 		while($cur_hour = $result->fetch_assoc())
 		{
 			//$cur_hour = $hourly_weather[$i];
@@ -380,7 +381,10 @@ function print_openweathermap($res_description)
 // API description here:
 //   https://openweathermap.org/current
 			$cur_time = $cur_hour['mytime'];
-			$cur_temp = $cur_hour['temp'];
+			$cur_temp = array('min' => $cur_hour['temp_min'],
+				'avg' => $cur_hour['temp_avg'],
+				'max' => $cur_hour['temp_max']
+			);
 			$cur_humidity = $cur_hour['humidity'];
 			$cur_wind_speed = $cur_hour['wind_speed']; // meters per second
 			$cur_wind_speed = round($cur_wind_speed * 3600 / 1000);
@@ -409,10 +413,11 @@ function print_openweathermap($res_description)
 			println('    <div class="weather_detail ' .$cloudinessClass . '">'); //one of: sunny, bright, rainy, thunderstorm
 			println('      <div class="weather_time">' . $cur_time . '</div>');
 			println('      <div class="weather_cloudiness">' . $cur_clouds_name . '</div>');
-			println('      <div class="weather_temperature">' . round($cur_temp) . ' C</div>');
+			println('      <div class="weather_temperature">' . round($cur_temp['min']) . 'C&nbsp;&leq;&nbsp;' . round($cur_temp['avg']) . 'C&nbsp;&leq;&nbsp;' . round($cur_temp['max']) . 'C</div>');
 			//println('      <div class="weather_downfall">' . str_replace("Risiko ","", $weather_row->weatherDownfall) . ' Regen</div>');
 			println('      <div class="weather_windspeed">' . $cur_wind_speed . ' km/h Wind</div>');
 			println('    </div>');
+			$i += 1;
 		}
 		if ($i >= 3)
 		{

@@ -38,8 +38,9 @@ if(file_exists($CONFIG_FILE) && can_i_write_to($CONFIG_FILE))
 	}
 }
 
-
-$curTime = time();
+// let's use the request's timestamp, the real 'beginning'
+//$curTime = time();
+$curTime = $_SERVER['REQUEST_TIME'];
 foreach($cacheAge as $curCacheName => $curCacheAge)
 {
 	if (array_key_exists($curCacheName, $EXTERNAL_RESSOURCES)
@@ -272,6 +273,71 @@ if(0 < count($error_store))
 	}
 	echo "</table>\n";
 	echo "</details></div>\n";
+	$ERROR_LOG_FILE = 'error.log';
+	try {
+		if(file_exists($ERROR_LOG_FILE))
+		{
+			if(!touch($ERROR_LOG_FILE))
+			{
+				echo "Due to that an error log file \"" . $ERROR_LOG_FILE . "\" does not yet exist, ";
+				echo "I tried to create it. But creating it failed unfortunately.";
+			}
+		}
+		if(file_exists($ERROR_LOG_FILE))
+		{
+			$fh = fopen($ERROR_LOG_FILE, "a");
+			// RFC 3339 date, e.g.: 2022-10-15T13:40:49+02:00
+			$time_str = date(DATE_RFC3339, $curTime);
+			if(false !== $fh)
+			{
+				$write_error_count = 0;
+				$total_line_count = 0;
+				foreach($error_store as $key => $value)
+				{
+					$total_line_count += 1;
+					$to_write = $time_str . ',';
+
+					if(is_array($value))
+					{
+						if(2 <= count($value))
+						{
+							$to_write .= $value[0] . ',' . $value[1];
+						} elseif(1 == count($value))
+						{
+							$to_write .= $value[0];
+						}
+					} else
+					{
+						$to_write .= $value;
+					}
+
+					$to_write .= "\n";
+					if(false === fwrite($fh, $to_write))
+					{
+						$write_error_count += 1;
+					}
+					$total_line_count += 1;
+				}
+				if(0 < $write_error_count)
+				{
+					echo "Writing error log file \"" . $ERROR_LOG_FILE . "\", failed " . $write_error_count . " times out of ";
+					echo $total_line_count . " lines to write.";
+				}
+				if(false === fflush($fh)
+				&& false === fclose($fh))
+				{
+					echo "Writing out ('flushing') and closing of file handle, ";
+					echo " of error log file \"" . $ERROR_LOG_FILE . "\", failed.";
+				}
+			} else {
+				echo "Could not open file handle for error log file \"" . $ERROR_LOG_FILE . "\", ";
+				echo "even 'though it should exist.";
+			}
+		}
+	} catch(Exception $error_handle)
+	{
+		echo "Unknown error during writing error log file \"" . $ERROR_LOG_FILE . "\".";
+	}
 
 }
 
