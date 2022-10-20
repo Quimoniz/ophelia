@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
 include('includes.php');
+
 if(@file_exists('config.php'))
 {
 	include('config.php');
@@ -10,7 +11,6 @@ if(@file_exists('config.php'))
 	echo "<h1>Please rename the config.php.example and adjust it to your needs</h1>\n";
 }
 
-$CACHE_PREFIX = 'cache/';
 
 //TODO use set_error_handler()
 //  to define a callback, that handles PHP errors
@@ -275,7 +275,7 @@ if(0 < count($error_store))
 	echo "</details></div>\n";
 	$ERROR_LOG_FILE = 'error.log';
 	try {
-		if(file_exists($ERROR_LOG_FILE))
+		if(!file_exists($ERROR_LOG_FILE))
 		{
 			if(!touch($ERROR_LOG_FILE))
 			{
@@ -333,6 +333,8 @@ if(0 < count($error_store))
 				echo "Could not open file handle for error log file \"" . $ERROR_LOG_FILE . "\", ";
 				echo "even 'though it should exist.";
 			}
+		} else {
+			echo "Couldn't write errors to error log file, it does not exist and I could not create it.";
 		}
 	} catch(Exception $error_handle)
 	{

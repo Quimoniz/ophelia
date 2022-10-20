@@ -120,6 +120,9 @@ function get_filecache($shortpath_to_file)
 	if(file_exists($actual_path))
 	{
 		return file_get_contents($actual_path);
+	} else
+	{
+		note_error(__FUNCTION__, "Cache file \"$actual_path\" does not exist.");
 	}
 	return '';
 }
@@ -236,16 +239,21 @@ function get_text_between($haystack, $needle_start, $needle_end, $offset = 0)
 }
 function parse_openweathermap($res_description)//$WEATHER_JSON)
 {
+	$json_weather = array();
 	try {
-		$json_weather = json_decode(get_filecache($res_description['file']), true);
+                $raw_json_data = get_filecache($res_description['file']);
+		if(1 > strlen($raw_json_data)) note_error("OpenWeatherMap-Parsing", "The underlying JSON file is empty.");
+		$json_weather = json_decode($raw_json_data, true);
 	} catch(Exception $e)
 	{
-		// don't to anything
-		$json_weather = null;
+		// don't do anything
+		//$json_weather = null;
+		note_error("OpenWeatherMap-Parsing", "Error when trying to decode weather info as JSON.");
 	}
 	if( is_null($json_weather) )
 	{
-		note_error("OpenWeatherMap-Parsing", "<span title='Could not parse $WEATHER_JSON'>&#9888;</span>");
+		note_error("OpenWeatherMap-Parsing", "\$json_weather is null");
+		note_error("OpenWeatherMap-Parsing", "<span title='Could not parse " . $res_description['file'] . "'>&#9888;</span>");
 		return;
 	}
 	$db_handle = new mysqli($res_description['secrets']['DBHOST'],
@@ -259,6 +267,8 @@ function parse_openweathermap($res_description)//$WEATHER_JSON)
 		note_error(__FUNCTION__, "Couldn't connect to database");
 		echo "\n\n\nDB ERROR\n\n\n";
 	}
+
+	$json_weather = (array) $json_weather; // we could use 'get_object_vars()' just as well
 
 
 	if(array_key_exists('hourly', $json_weather))
@@ -294,7 +304,7 @@ function parse_openweathermap($res_description)//$WEATHER_JSON)
 		$is_first_entry = true;
 		for($i = 0; $i < count($hourly_weather); $i++)
 		{
-			$cur_hour = $hourly_weather[$i];
+			$cur_hour = (array) $hourly_weather[$i];
 			if(array_key_exists('dt', $cur_hour))
 			{
 				if($is_first_entry)
@@ -304,6 +314,29 @@ function parse_openweathermap($res_description)//$WEATHER_JSON)
 				{
 					$combined_insert .= ', ';
 				}
+				$cur_description = array('id'          => 0,
+							 'main'        => "NULL",
+							 'description' => "NULL",
+							 'icon'        => "NULL");
+				if(array_key_exists('weather', $cur_hour)
+				&& is_array($cur_hour['weather']))
+				{
+//$cur_hour['weather'];
+					$cur_weather_desc_temp = (array) ($cur_hour['weather'][0]);
+					if(array_key_exists('id', $cur_weather_desc_temp)) $cur_description['id'] = (int) $cur_weather_desc_temp['id'];
+					foreach(array('main', 'description', 'icon') as $cur_entry)
+					{
+						if(array_key_exists($cur_entry, $cur_weather_desc_temp))
+						{
+							$cur_description[$cur_entry] = (string) $cur_weather_desc_temp[$cur_entry];
+							if(0 < strlen($cur_description[$cur_entry]))
+							{
+								$cur_description[$cur_entry] = "'" . $cur_description[$cur_entry] . "'";
+							}
+						}
+					}
+				}
+				
 				$combined_insert .= sprintf("(%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
 					$cur_hour['dt'],
 					array_key_exists('temp', $cur_hour) ? $cur_hour['temp'] : "NULL",
@@ -317,24 +350,13 @@ function parse_openweathermap($res_description)//$WEATHER_JSON)
 					array_key_exists('wind_speed', $cur_hour) ? $cur_hour['wind_speed'] : "NULL",
 					array_key_exists('wind_deg', $cur_hour) ? $cur_hour['wind_deg'] : "NULL",
 					array_key_exists('wind_gust', $cur_hour) ? $cur_hour['wind_gust'] : "NULL",
-					array_key_exists('weather', $cur_hour)
-					 && array_key_exists(0, $cur_hour['weather'])
-					 && array_key_exists('id', $cur_hour['weather'][0])
-					 ? $cur_hour['weather'][0]['id'] : "NULL",
-					array_key_exists('weather', $cur_hour)
-					 && array_key_exists(0, $cur_hour['weather'])
-					 && array_key_exists('main', $cur_hour['weather'][0])
-					 ? ("'" . $cur_hour['weather'][0]['main'] . "'") : "NULL",
-					array_key_exists('weather', $cur_hour)
-					 && array_key_exists(0, $cur_hour['weather'])
-					 && array_key_exists('description', $cur_hour['weather'][0])
-					 ? ("'" . $cur_hour['weather'][0]['description'] . "'") : "NULL",
-					array_key_exists('weather', $cur_hour)
-					 && array_key_exists(0, $cur_hour['weather'])
-					 && array_key_exists('icon', $cur_hour['weather'][0])
-					 ? ("'" . $cur_hour['weather'][0]['icon'] . "'") : "NULL",
+					$cur_description['id'],
+					$cur_description['main'],
+					$cur_description['description'],
+					$cur_description['icon'],
 					array_key_exists('pop', $cur_hour) ? $cur_hour['pop'] : "NULL",
-					array_key_exists('rain', $cur_hour) ? $cur_hour['rain'] : "NULL"
+					array_key_exists('rain', $cur_hour)
+					&& array_key_exists('1h', $cur_hour['rain']) ? $cur_hour['rain']['1h'] : "NULL"
 				);
 			}
 		}
@@ -352,6 +374,9 @@ SELECT FROM_UNIXTIME((FLOOR((dt - 1657576800) / (3600*3)) * (3600 * 3)) + 165757
 		//echo "</pre>";
 
 		//println('<div style="font-family: Sans, Sans-Serif; background-color: #d0d000; color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,1); border-radius: 20px; float: right; font-size: 90%; padding: 0em 1em 0em 1em;"><h3>OpenWeatherMap</h3>');
+	} else
+	{
+		note_error(__FUNCTION__, "Key 'hourly' doesn't exist in JSON weather data.");
 	}
 }
 function print_openweathermap($res_description)
