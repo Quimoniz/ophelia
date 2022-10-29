@@ -165,6 +165,13 @@ function buildDataSerieses(owmArr)
       };
     }
   }
+
+  // determine all time min max
+  var allMinMax = [minTemps[0]["y"], maxTemps[0]["y"]];
+  if(minTemps[1]["y"] < allMinMax[0]) allMinMax[0] = minTemps[1]["y"];
+  if(maxTemps[1]["y"] > allMinMax[1]) allMinMax[1] = maxTemps[1]["y"];
+  var deltaMinMax = allMinMax[1] - allMinMax[0];
+
   //   potential TODO: draw two horizontal lines into the graph, annotating them with the overall min and max temperatures
 
   // Generate Annotations for
@@ -173,11 +180,13 @@ function buildDataSerieses(owmArr)
   {
     for(var curPos of [{x: minTemps[i]["x"],
 	                y: minTemps[i]["y"],
-			prefix: "Minimal"
+			prefix: "Minimal",
+                        color: "#0000d0"
 	 	       },{
 		        x: maxTemps[i]["x"],
 			y: maxTemps[i]["y"],
-			prefix: "Maximal"
+			prefix: "Maximal",
+                        color: "#f00000"
 		       }])
     {
       // documentation:
@@ -191,9 +200,10 @@ function buildDataSerieses(owmArr)
         ay: 40,  // the annotation's offset, apparently in pixels
         text: (curPos["prefix"] + " Temperatur " + curPos["y"] + " ℃"), // U+2103
         font: {
-          size: 14
+          size: 14,
+          color: curPos.color
         },
-        bgcolor: "#ffffff",
+        bgcolor: "rgba(255, 255, 255, 0.6)",
         arrowcolor: "#b0b0b0"
       };
       if("Minimal" == curPos.prefix) curAnnotation.ay = -40;
@@ -215,16 +225,22 @@ function buildDataSerieses(owmArr)
 	  yref:    "paper",  
           //TODO:
 	  x:       owmArr[i].timestamp * 1000,//startTime.getTime() + (1000 * 3600 * i),
-	  y:       0.4,  // hardcoded y-offset; with 'yref' being paper, 0.5 would refer to half of full height (full height = 1)
+	  y:       0.25,  // hardcoded y-offset; with 'yref' being paper, 0.5 would refer to half of full height (full height = 1)
 	  xanchor: "center",
 	  yanchor: "middle",
 	  //x: i, y: 20, xref: "paper", yref: "paper",
 	  sizex:  (1000 * 3600 * 3.5),
-	  sizey:  1, //20,
+	  sizey:  0.5, //20,
 	  sizing:  "stretch",
 	  opacity: 0.5,
 	  layer:   "below"
 	};
+        // if current line drawn (i.e. temperature) is below average,
+        //   then switch position of the image 'below', to be drawn at the top of the graph
+        if(owmArr[i].temp < (allMinMax[0] + deltaMinMax / 2))
+        {
+          curImage.y = 0.75;
+        }
 /*  all the weather icons we got
 img/weather/achtung.small.png
 img/weather/blitz.small.png
@@ -285,10 +301,6 @@ img/weather/wolke_wind.small.png
   }
   
   //  set the graph's y axis to only contain min to max temperature, not more
-  var allMinMax = [minTemps[0]["y"], maxTemps[0]["y"]];
-  if(minTemps[1]["y"] < allMinMax[0]) allMinMax[0] = minTemps[1]["y"];
-  if(maxTemps[1]["y"] > allMinMax[1]) allMinMax[1] = maxTemps[1]["y"];
-  var deltaMinMax = allMinMax[1] - allMinMax[0];
   if (deltaMinMax < Math.pow(10, -300)) deltaMinMax = Math.pow(10, -300);
   plotlyConfiguration.plotlyLayout.yaxis.range = [
     allMinMax[0] - (deltaMinMax * 0.1),
