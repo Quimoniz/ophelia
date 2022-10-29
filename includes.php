@@ -450,6 +450,21 @@ function print_openweathermap($res_description)
 			println('</div>');
 		}
 		println('</div>');
+		// now follows the pure Javascript approach
+		//   first off, we need to fetch the data, but this time, not aggregated,
+		//   but instead we get the data for each hour separately
+          
+		$result = $db_handle->query("SELECT dt AS 'timestamp', temp, humidity, wind_speed, clouds, weather_name, weather_icon, weather_description FROM openweathermap_forecast WHERE dt >= $ts_today AND dt <= $ts_end");
+		$json_array = array();
+		while($cur_hour = $result->fetch_assoc())
+		{
+			array_push($json_array, $cur_hour);
+		}
+		println('<script>');
+		println( 'window.jsonWeather = ' . str_replace(array(',', '{'), array(",\n  ", "\n{"), json_encode($json_array)));
+		println('</script>');
+		println('<script type="text/javascript" src="components/openweathermap/plotly-2.14.0.min.js"></script>');
+		println('<script type="text/javascript" src="components/openweathermap/rendering-graph.js"></script>');
 	//println("</div>");
 	}
 }

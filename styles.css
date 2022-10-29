@@ -36,6 +36,7 @@ a:link,a:visited {
 .weather_box {
   font-family: Sans, sans-serif;
   font-size: 10pt;
+  height: 30vh;
 }
 .weather_column {
   background-color: #6090ff;
