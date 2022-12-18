@@ -1,18 +1,35 @@
-var myPlot = undefined;
-var plotlyConfiguration = new Object();
 function init()
 {
   //var plotEle = document.getElementById("weather_plot");
-  var plotEle = document.querySelector(".weather_box");
-  removeAllChilds(plotEle);
-  configurePlotly(plotEle);
-  plotlyConfiguration.plotlyData = buildDataSerieses(window.jsonWeather);
+  var wrapperEle = document.querySelector(".weather_box");
+  removeAllChilds(wrapperEle);
 
-  myPlot = Plotly.newPlot(plotEle,
-    plotlyConfiguration.plotlyData,
-	plotlyConfiguration.plotlyLayout,
-	plotlyConfiguration.plotlyConfiguration
-  );
+  var now   = new Date();
+  var today = new Date(now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() );
+  for(var i = 0; i < 2; ++i)
+  {
+    var myPlot = undefined;
+    var plotlyConfiguration = new Object();
+    var plotEle = document.createElement("div");
+    wrapperEle.appendChild(plotEle);
+    plotEle.classList.add(".weather_day");
+    plotEle.style.width  = Math.floor(window.innerWidth  * 0.5 - 30) + "px";
+    plotEle.style.height = Math.floor(window.innerHeight * 0.25 - 6) + "px";
+
+    plotlyConfiguration = configurePlotly(plotEle);
+    plotlyConfiguration.plotlyData = buildDataSerieses(
+      window.jsonWeather,
+      plotlyConfiguration,
+      today.getTime() + 86400000*i,
+      today.getTime() + 86400000*(i+1)
+    );
+  
+    myPlot = Plotly.newPlot(plotEle,
+      plotlyConfiguration.plotlyData,
+  	plotlyConfiguration.plotlyLayout,
+  	plotlyConfiguration.plotlyConfiguration
+    );
+  }
 }
 function configurePlotly(plotEle)
 {
@@ -21,6 +38,7 @@ function configurePlotly(plotEle)
   // see the source file
   //   src/plots/cartesian/layout_attributes.js
   // for a complete set of available options
+  var plotlyConfiguration = new Object();
   plotlyConfiguration.plotlyLayout = {
 	  xaxis: {
 	    type: 'date',
@@ -56,6 +74,8 @@ function configurePlotly(plotEle)
 	  showlegend: false,
 	  annotations: new Array(),
 	  images: new Array(),
+          //plot_bgcolor: "transparent",
+          paper_bgcolor: "transparent",
 	  margin: {
 	    t: 0,
 		r: 0,
@@ -86,20 +106,22 @@ function configurePlotly(plotEle)
 	  displayModeBar: true // icons always visible
 	}
 	//Plotly.d3.behavior.zoom.scaleBy = function(selection, k) { return k*100; };
+  return plotlyConfiguration;
 }
 
-function buildDataSerieses(owmArr)
+function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
 {
   // determine timestamp of the start of the current day
   //   TODO: not used anymore, remove it
-  var startTime = new Date();
   console.log(startTime);
-  var timeString = startTime.getFullYear() + "-" +
-                   ((startTime.getMonth() + 1) < 10 ? ("0" + (startTime.getMonth() + 1)) : (startTime.getMonth() + 1)) + "-" +
-				   (startTime.getDate()  < 10 ? ("0" + startTime.getDate() ) : startTime.getDate());
+  var startTimeObj = new Date(startTime);
+  console.log(startTimeObj);
+  var timeString = startTimeObj.getFullYear() + "-" +
+                   ((startTimeObj.getMonth() + 1) < 10 ? ("0" + (startTimeObj.getMonth() + 1)) : (startTimeObj.getMonth() + 1)) + "-" +
+				   (startTimeObj.getDate()  < 10 ? ("0" + startTimeObj.getDate() ) : startTimeObj.getDate());
   console.log(timeString);
   startTime = new Date(timeString);
-  console.log(startTime);
+  console.log(startTimeObj);
 
   var now = new Date();
   var dataSerieses = 
@@ -139,53 +161,77 @@ function buildDataSerieses(owmArr)
    ];
 
 
-  var minTime = owmArr[0].timestamp * 1000;
-  var maxTime = owmArr[owmArr.length - 1].timestamp * 1000;
-  var minTemps = new Array( undefined, undefined);
-  var maxTemps = new Array( undefined, undefined);
-  for(var i = 0; i < owmArr.length; ++i)
+  var minTime = startTime.getTime();
+  var maxTime = endTime;
+  var dayTemps = new Array();
+  var allMinMax = [ undefined, undefined ];
+  for(var i = 0, j=0; i < owmArr.length; ++i)
   {
     let curTime = owmArr[i].timestamp * 1000;
     let curTemp = Math.round(owmArr[i].temp * 10)/10;
-    dataSerieses[0]["x"].push(curTime);
-    dataSerieses[0]["y"].push(curTemp);
-    let dayOffset = Math.floor(i / 24);
-    if(undefined === minTemps[dayOffset] || minTemps[dayOffset]["y"] > curTemp)
+    if(curTime < startTime
+    || curTime > endTime)
     {
-      minTemps[dayOffset] = {
-        "x": curTime,
-    	"y": curTemp
-      };
-    }
-    if(undefined === maxTemps[dayOffset] || maxTemps[dayOffset]["y"] < curTemp)
+      continue;
+    } else
     {
-      maxTemps[dayOffset] = {
-        "x": curTime,
-    	"y": curTemp
-      };
+      dataSerieses[0]["x"].push(curTime);
+      dataSerieses[0]["y"].push(curTemp);
+      let dayOffset = Math.floor(j / 24);
+      if(dayOffset == dayTemps.length)
+      {
+        dayTemps.push({
+          startTime:   curTime,
+          endTime:     curTime,
+          minTemp:     curTemp,
+          minTempTime: curTime,
+          maxTemp:     curTemp,
+          maxTempTime: curTime
+        });
+      } else
+      {
+        dayTemps[dayOffset].endTime       = curTime;
+        if(dayTemps[dayOffset].minTemp > curTemp)
+        {
+          dayTemps[dayOffset].minTemp     = curTemp;
+          dayTemps[dayOffset].minTempTime = curTime;
+        }
+        if(dayTemps[dayOffset].maxTemp < curTemp)
+        {
+          dayTemps[dayOffset].maxTemp     = curTemp;
+          dayTemps[dayOffset].maxTempTime = curTime;
+        }
+      }
+      if(undefined === allMinMax[0])
+      {
+        allMinMax[0] = curTemp;
+        allMinMax[1] = curTemp;
+      }
+      // determine all time min max
+      if(allMinMax[0] > curTemp) allMinMax[0] = curTemp;
+      if(allMinMax[1] < curTemp) allMinMax[1] = curTemp;
+      j += 1;
     }
   }
 
-  // determine all time min max
-  var allMinMax = [minTemps[0]["y"], maxTemps[0]["y"]];
-  if(minTemps[1]["y"] < allMinMax[0]) allMinMax[0] = minTemps[1]["y"];
-  if(maxTemps[1]["y"] > allMinMax[1]) allMinMax[1] = maxTemps[1]["y"];
   var deltaMinMax = allMinMax[1] - allMinMax[0];
 
   //   potential TODO: draw two horizontal lines into the graph, annotating them with the overall min and max temperatures
 
   // Generate Annotations for
   //   minimum and maximum temperature on each day
-  for(var i = 0; i < 2; ++i)
+  for(var i = 0; i < dayTemps.length; ++i)
   {
-    for(var curPos of [{x: minTemps[i]["x"],
-	                y: minTemps[i]["y"],
-			prefix: "Minimal",
+    for(var curPos of [{x: dayTemps[i].minTempTime,
+	                y: dayTemps[i].minTemp,
+			prefix: "",
+			type: "min",
                         color: "#0000d0"
 	 	       },{
-		        x: maxTemps[i]["x"],
-			y: maxTemps[i]["y"],
-			prefix: "Maximal",
+		        x: dayTemps[i].maxTempTime,
+			y: dayTemps[i].maxTemp,
+			prefix: "",
+			type: "max",
                         color: "#f00000"
 		       }])
     {
@@ -197,26 +243,30 @@ function buildDataSerieses(owmArr)
         x:     curPos["x"],
         y:     curPos["y"],
         ax: 0,
-        ay: 40,  // the annotation's offset, apparently in pixels
-        text: (curPos["prefix"] + " Temperatur " + curPos["y"] + " ℃"), // U+2103
+        ay: 20,  // the annotation's offset, apparently in pixels
+        text: (curPos["prefix"] + curPos["y"] + " ℃"), // U+2103
         font: {
-          size: 14,
+          size: 18,
           color: curPos.color
         },
-        bgcolor: "rgba(255, 255, 255, 0.6)",
+        bgcolor: "rgba(255, 255, 255, 0.7)",
         arrowcolor: "#b0b0b0"
       };
-      if("Minimal" == curPos.prefix) curAnnotation.ay = -40;
-      if(curAnnotation.x < (minTime + 3600 * 2 * 1000))
+      if("min" == curPos.type) curAnnotation.ay *= -1;
+      if(curAnnotation.x < (minTime + 3600 * 1 * 1000))
       {
-        curAnnotation.x += 3600 * 2 * 1000;
+        curAnnotation.x += 3600 * 1 * 1000;
+        curAnnotation.ay *= 1.5;
+      } else if(curAnnotation.x > (maxTime - 3600 * 1 * 1000))
+      {
+        curAnnotation.x -= 3600 * 1 * 1000;
         curAnnotation.ay *= 1.5;
       }
       plotlyConfiguration.plotlyLayout.annotations.push(curAnnotation);
      }
   }
 
-  // TODO: think about some mergin algorithm for the clouds of each 4 hour period
+  // TODO: think about some merging algorithm for the clouds of each 4 hour period
   for(var i = 0; i < owmArr.length; i+=4)
   {
     let curImage = {
@@ -230,7 +280,9 @@ function buildDataSerieses(owmArr)
 	  yanchor: "middle",
 	  //x: i, y: 20, xref: "paper", yref: "paper",
 	  sizex:  (1000 * 3600 * 3.5),
-	  sizey:  0.5, //20,
+//     0.5 = half the graph's height (since 'yref' above refers to 'paper'),
+// plot: https://www.wolframalpha.com/input?i=f%28x%29%3D0.9%2F%28x%2F600%29%3B+x+from+500+to+1100
+          sizey:  (0.9 / (window.innerHeight / 600)),
 	  sizing:  "stretch",
 	  opacity: 0.5,
 	  layer:   "below"

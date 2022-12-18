@@ -170,9 +170,13 @@ a:link,a:visited {
   100% { background-position: 0px -5px; }
 }
 @keyframes bobble_rainy {
-  0 %    { background-position: 10px 18px; }
-  50 %   { background-position: 70px 18px; }
-  100 %  { background-position: 10px 18px; }
+  0%   { background-position: 10px 18px; }
+  50%  { background-position: 70px 18px; }
+  100% { background-position: 10px 18px; }
+}
+.weather_day {
+  width: 50%;
+  height: 25vh;
 }
 .link_row {
   background-color: #ffffff;
