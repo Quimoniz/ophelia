@@ -12,9 +12,7 @@ function init()
     var plotlyConfiguration = new Object();
     var plotEle = document.createElement("div");
     wrapperEle.appendChild(plotEle);
-    plotEle.classList.add(".weather_day");
-    plotEle.style.width  = Math.floor(window.innerWidth  * 0.5 - 30) + "px";
-    plotEle.style.height = Math.floor(window.innerHeight * 0.25 - 6) + "px";
+    plotEle.classList.add("weather_day");
 
     plotlyConfiguration = configurePlotly(plotEle);
     plotlyConfiguration.plotlyData = buildDataSerieses(

@@ -36,7 +36,8 @@ a:link,a:visited {
 .weather_box {
   font-family: Sans, sans-serif;
   font-size: 10pt;
-  height: 30vh;
+  height: 40vh;
+  overflow: auto;
 }
 .weather_column {
   background-color: #6090ff;
@@ -176,7 +177,8 @@ a:link,a:visited {
 }
 .weather_day {
   width: 50%;
-  height: 25vh;
+  height: 19.5vh;
+  background-color: #b8e8ff;
 }
 .link_row {
   background-color: #ffffff;
