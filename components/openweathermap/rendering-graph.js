@@ -5,14 +5,23 @@ function init()
   removeAllChilds(wrapperEle);
 
   var now   = new Date();
-  var today = new Date(now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() );
+  var today = new Date( utilGetDateStr(now) );
   for(var i = 0; i < 2; ++i)
   {
     var myPlot = undefined;
     var plotlyConfiguration = new Object();
+    var dayEle = document.createElement("div");
+    wrapperEle.appendChild(dayEle);
+    dayEle.classList.add("weather_day");
+
+    var labelingEle = document.createElement("label");
+    labelingEle.classList.add("weather_daylabel");
+    dayEle.appendChild(labelingEle);
+    labelingEle.appendChild(document.createTextNode(utilGetDayMonthStr(new Date(today.getTime() + 86400000 * i))));
+
     var plotEle = document.createElement("div");
-    wrapperEle.appendChild(plotEle);
-    plotEle.classList.add("weather_day");
+    dayEle.appendChild(plotEle);
+    plotEle.classList.add("weather_day_plot");
 
     plotlyConfiguration = configurePlotly(plotEle);
     plotlyConfiguration.plotlyData = buildDataSerieses(
@@ -29,6 +38,29 @@ function init()
     );
   }
 }
+function utilGetDateStr(dateObj) {
+    if ( ! (dateObj instanceof Date)) return undefined;
+    return dateObj.getFullYear() + "-" + (dateObj.getMonth() < 9 ? "0" : "") + (dateObj.getMonth() + 1) + "-"  + (dateObj.getDate() < 10 ? "0" : "")+ dateObj.getDate()
+}
+function utilGetDayMonthStr(dateObj) {
+    if ( ! (dateObj instanceof Date)) return undefined;
+    const monthNames = [
+      "Januar",
+      "Februar",
+      "März",
+      "April",
+      "Mai",
+      "Juni",
+      "Juli",
+      "August",
+      "September",
+      "Oktober",
+      "November",
+      "Dezember"
+     ];
+    return dateObj.getDate() + ". " + monthNames[dateObj.getMonth()];
+}
+
 function configurePlotly(plotEle)
 {
   // Thanks to past-me
@@ -114,9 +146,7 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
   console.log(startTime);
   var startTimeObj = new Date(startTime);
   console.log(startTimeObj);
-  var timeString = startTimeObj.getFullYear() + "-" +
-                   ((startTimeObj.getMonth() + 1) < 10 ? ("0" + (startTimeObj.getMonth() + 1)) : (startTimeObj.getMonth() + 1)) + "-" +
-				   (startTimeObj.getDate()  < 10 ? ("0" + startTimeObj.getDate() ) : startTimeObj.getDate());
+  var timeString = utilGetDateStr(startTimeObj);
   console.log(timeString);
   startTime = new Date(timeString);
   console.log(startTimeObj);
@@ -265,7 +295,7 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
   }
 
   // TODO: think about some merging algorithm for the clouds of each 4 hour period
-  for(var i = 0; i < owmArr.length; i+=4)
+  for(var i = 0; i < owmArr.length; i+=2)
   {
     let curImage = {
           source:  "img/weather/",
@@ -277,7 +307,7 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
 	  xanchor: "center",
 	  yanchor: "middle",
 	  //x: i, y: 20, xref: "paper", yref: "paper",
-	  sizex:  (1000 * 3600 * 3.5),
+	  sizex:  (1000 * 3600 * 2.1),
 //     0.5 = half the graph's height (since 'yref' above refers to 'paper'),
 // plot: https://www.wolframalpha.com/input?i=f%28x%29%3D0.9%2F%28x%2F600%29%3B+x+from+500+to+1100
           sizey:  (0.9 / (window.innerHeight / 600)),

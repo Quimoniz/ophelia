@@ -176,9 +176,26 @@ a:link,a:visited {
   100% { background-position: 10px 18px; }
 }
 .weather_day {
-  width: 50%;
   height: 19.5vh;
   background-color: #b8e8ff;
+}
+.weather_daylabel {
+  display: block;
+  float: left;
+  clear: left;
+  width: 2%;
+  overflow: visible;
+  color: white;
+  font-family: Arial, Sans-Serif;
+  font-weight: bold;
+  font-size: 18pt;
+  transform: translate(0.5vw, 12vh) rotate(270deg);
+  white-space: nowrap;
+}
+.weather_day_plot {
+  float: left;
+  width: 90%;
+  height: 19.5vh;
 }
 .link_row {
   background-color: #ffffff;
