@@ -204,7 +204,7 @@ var Global = {
   initializeTabs: function()
   {
     var newsEles = document.querySelectorAll(".news_wrapper");
-    Global.tabs = new Tabbing(Global.BODY, ["100%", "15em"]);
+    Global.tabs = new Tabbing(Global.BODY, ["calc(100% - 4px)", "15em"]);
     for(var i = 0; i < newsEles.length; ++i)
     {
       Global.tabs.addTab(newsEles[i].getAttribute("title"), newsEles[i]);

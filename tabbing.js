@@ -294,6 +294,7 @@ function TabHeading(paramTabbingObj, tabName)
   this.headingEle.style.borderTopRightRadius = "10px";
   this.headingEle.style.overflow = "hidden";
   this.headingEle.setAttribute("class", "tab_head tab_head_unfocused")
+  this.headingEle.setAttribute("tabindex", "" + paramTabbingObj.tabs.length);
   this.eventHandler = undefined;
   this.canResize = function(newWidth)
   {
@@ -390,6 +391,7 @@ function TabHeading(paramTabbingObj, tabName)
   }
 
   this.setTitle(tabName); 
+  this.headingEle.addEventListener("focus", function (selfReference) { return function() { selfReference.eventHandler(); }}(this));
   if(0 == paramTabbingObj.tabs.length)
   {
     this.focus();
