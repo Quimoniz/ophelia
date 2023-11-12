@@ -333,7 +333,7 @@ var hovering_clock = {
     hovering_clock.initOffset = hovering_clock.initTime - (new Date()).getTime();
     hovering_clock.previousTimeString = hovering_clock.descEle.firstChild.nodeValue;
     hovering_clock.descEle.setAttribute("title", "Offset, from Server Time: " + (hovering_clock.initOffset / 1000 * -1) + " Sekunden");
-    hovering_clock.wrapperEle.style.left = (window.innerWidth / 2 - hovering_clock.wrapperEle.offsetWidth / 2) + "px";
+    //hovering_clock.wrapperEle.style.left = (window.innerWidth / 2 - hovering_clock.wrapperEle.offsetWidth / 2) + "px";
     hovering_clock.update();
     setInterval(hovering_clock.update, 1000);
   },
