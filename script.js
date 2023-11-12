@@ -15,6 +15,7 @@ class DeparturesDisplayHandler {
   }
   constructor(parentEle)
   {
+console.log(this);
     this.BODY = document.getElementsByTagName("body")[0];
     this.vvoList = parentEle;
     this.departureRows = new Array();
@@ -23,7 +24,8 @@ class DeparturesDisplayHandler {
     this.offsetForTime = 0;
     this.parseDepartureRows();
     this.updateDepartures();
-    setInterval(this.updateDepartures, 60000);
+    var selfReference = this;
+    setInterval(() => { selfReference.updateDepartures() }, 60000);
   }
   parseDepartureRows()
   {
@@ -91,6 +93,7 @@ class DeparturesDisplayHandler {
 		//      because the class itself should know about how to
 		//      represent it's own state/departure time
           departureEle.appendChild(document.createTextNode(`${curRow.getDepartureMinutes()} Min (${curRow.getDepartureHHMM()})`))
+          curRow.blinkDepartureTime();
         } else console.log("couldnt find departure element");
       }
     }
@@ -300,6 +303,19 @@ class DepartureBlob
     outStr += this.departure.getMinutes()
 
     return outStr;
+  }
+  blinkDepartureTime()
+  {
+    const departureEle = this.element.querySelector(".departure_cell-departure");
+    departureEle.animate(
+     [ {
+         "backgroundColor": "#ffffff"
+       }, {
+         "backgroundColor": "#7090ff"
+       }, {
+         "backgroundColor": "#ffffff"
+       }
+     ], 1000);
   }
 }
 
