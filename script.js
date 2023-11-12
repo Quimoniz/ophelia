@@ -1,24 +1,35 @@
 
-var Departures = {
-  BODY: undefined,
-  vvoList: undefined,
-  departureRows: new Array(),
-  MAX_DEPARTURES_TO_SHOW: 8,
+class DeparturesDisplayHandler {
+  static initialize()
+  {
+      let allDepartureListings = document.getElementsByClassName("wrapper_departures");
+      if(0 == allDepartureListings)
+      {
+          console.error("Did not find any class='wrapper_departures' elements to initialize the javascript for it ")
+      } else {
+          for(var curDepartureWrapper of allDepartureListings)
+          {
+              new DeparturesDisplayHandler(curDepartureWrapper)
+          }
+      }
+  }
+  constructor(parentEle)
+  {
+    this.BODY = document.getElementsByTagName("body")[0];
+    this.vvoList = parentEle;
+    this.departureRows = new Array();
+    this.MAX_DEPARTURES_TO_SHOW = 8;
   //offsetForTime: -3600000,
-  offsetForTime: 0,
-  init: function()
+    this.offsetForTime = 0;
+    this.parseDepartureRows();
+    this.updateDepartures();
+    setInterval(this.updateDepartures, 60000);
+  }
+  parseDepartureRows()
   {
-    Departures.BODY = document.getElementsByTagName("body")[0];
-    Departures.vvoList = document.getElementsByClassName("wrapper_departures")[0];
-    Departures.parseDepartureRows();
-    Departures.updateDepartures();
-    setInterval(Departures.updateDepartures, 60000);
-  },
-  parseDepartureRows: function()
-  {
-    for(var i = 0, curRow, curCell, curBlob; i < Departures.vvoList.childNodes.length; ++i)
+    for(var i = 0, curRow, curCell, curBlob; i < this.vvoList.childNodes.length; ++i)
     {
-      curRow = Departures.vvoList.childNodes[i];
+      curRow = this.vvoList.childNodes[i];
       if(curRow && curRow.nodeType && 1 == curRow.nodeType
       && -1 < curRow.className.indexOf("departure_row"))
       {
@@ -44,33 +55,33 @@ var Departures = {
             } else if(0 == curCell.className.indexOf("departure_cell-departure"))
             {
               //curBlob.parseDeparture(curBlob, Util.stripWhitespace(curCell.firstChild.nodeValue));
-              curBlob.departure = new Date(parseInt(curCell.getAttribute("timestamp")) + Departures.offsetForTime);
+              curBlob.departure = new Date(parseInt(curCell.getAttribute("timestamp")) + this.offsetForTime);
             }
 	  }
         }
-        Departures.departureRows.push(curBlob);
-        if( i >= Departures.MAX_DEPARTURES_TO_SHOW)
+        this.departureRows.push(curBlob);
+        if( i >= this.MAX_DEPARTURES_TO_SHOW)
         {
           curBlob.setVisibility(curBlob, false);
         }
       }
     }
-  },
-  updateDepartures: function()
+  }
+  updateDepartures()
   {
     var killTime = (new Date()).getTime() + 120000;
-    for( var i = 0, curRow; i < Departures.departureRows.length; ++i)
+    for( var i = 0, curRow; i < this.departureRows.length; ++i)
     {
-      curRow = Departures.departureRows[i];
+      curRow = this.departureRows[i];
       if(curRow.departure.getTime() < killTime)
       {
-        Departures.vvoList.removeChild(curRow.element);
-        Departures.departureRows.splice(i, 1);
+        this.vvoList.removeChild(curRow.element);
+        this.departureRows.splice(i, 1);
         --i;
         curRow.element = undefined;
       } else if(curRow.element)
       {
-        curRow.setVisibility(curRow, i < Departures.MAX_DEPARTURES_TO_SHOW);
+        curRow.setVisibility(curRow, i < this.MAX_DEPARTURES_TO_SHOW);
 
         var departureEle = curRow.element.querySelector(".departure_cell-departure");
         if(departureEle)
@@ -79,12 +90,12 @@ var Departures = {
 		//TODO: put this text generation in the DepartureBlob class/function
 		//      because the class itself should know about how to
 		//      represent it's own state/departure time
-          departureEle.appendChild(document.createTextNode(Math.floor((curRow.departure.getTime() - (new Date()).getTime()) / 60000) + " Min"));
+          departureEle.appendChild(document.createTextNode(`${curRow.getDepartureMinutes()} Min (${curRow.getDepartureHHMM()})`))
         } else console.log("couldnt find departure element");
       }
     }
-  },
-  getHtmlMatches: function(sourceHtml, precedingText)
+  }
+  getHtmlMatches(sourceHtml, precedingText)
   {
     var curOffset = 0;
     var searchIndex = undefined;
@@ -105,13 +116,13 @@ var Departures = {
       curOffset = endlineIndex;
     }
     return resultArr;
-  },
-  htmlDecode: function(input) // Courtesy of Wladimir Palant https://stackoverflow.com/a/34064434
+  }
+  htmlDecode(input) // Courtesy of Wladimir Palant https://stackoverflow.com/a/34064434
   {
     var doc = new DOMParser().parseFromString(input, "text/html");
     return doc.documentElement.textContent;
-  },
-  appendDetail: function(rowEle, stopsArr)
+  }
+  appendDetail(rowEle, stopsArr)
   {
     var detailBox = undefined;
     detailBox = rowEle.querySelector(".departure_details");
@@ -125,26 +136,26 @@ var Departures = {
     for(var i = 0; i < stopsArr.length; ++i)
     {
       curListItem = document.createElement("li");
-      curListItem.appendChild(document.createTextNode(Departures.htmlDecode(stopsArr[i]) + " "));
+      curListItem.appendChild(document.createTextNode(this.htmlDecode(stopsArr[i]) + " "));
       stopsList.appendChild(curListItem);
     }
     detailBox.appendChild(stopsList);
     rowEle.style.height = "auto";
     rowEle.appendChild(detailBox);
-  },
+  }
 //TODO: this needs to be brought up to date
 //        I suppose it doesn't work anymore presently
-  loadDetails: function(eventSourceEle, detailUrl)
+  loadDetails(eventSourceEle, detailUrl)
   {
     var req = new XMLHttpRequest();
     req.open("GET", "vvo_detail.php?url=" + encodeURIComponent(detailUrl));
     req.onload = function()
     {
-        Departures.req = req; //DEBUG
+        this.req = req; //DEBUG
 
-        var matches = Departures.getHtmlMatches(req.responseText, " tour\">\r\n                <p><strong>");
+        var matches = this.getHtmlMatches(req.responseText, " tour\">\r\n                <p><strong>");
 
-        Departures.appendDetail(eventSourceEle, matches);
+        this.appendDetail(eventSourceEle, matches);
     }
     req.send();
 /*
@@ -237,14 +248,16 @@ var Util = {
   }
 };
 Util.init();
-function DepartureBlob()
+class DepartureBlob
 {
-  this.element = undefined;
-  this.id = 0;
-  this.type = "";
-  this.destination = "";
-  this.departure = 0;
-  this.parseDeparture = function(selfReference, rawStr)
+  constructor() {
+    this.element = undefined;
+    this.id = 0;
+    this.type = "";
+    this.destination = "";
+    this.departure = 0;
+  }
+  parseDeparture(selfReference, rawStr)
   {
     var parseMinutesDecimal = Util.hhMmToInt(rawStr.substring(1));
     var loadHour = Util.loadTime.getHours(),
@@ -259,7 +272,7 @@ function DepartureBlob()
     parsedDate.setMilliseconds(0);
     selfReference.departure = parsedDate;
   }
-  this.setVisibility = function(selfReference, shouldBeVisible)
+  setVisibility(selfReference, shouldBeVisible)
   {
     if(selfReference.element)
     {
@@ -272,8 +285,24 @@ function DepartureBlob()
       }
     }
   }
+  getDepartureMinutes()
+  {
+    const nowTime = (new Date()).getTime();
+    return Math.floor((this.departure.getTime() - nowTime) / 60000);
+  }
+  getDepartureHHMM()
+  {
+    var outStr = "";
+    if(  this.departure.getHours() < 10) outStr +="0";
+    outStr += this.departure.getHours()
+    outStr += ":";
+    if(this.departure.getMinutes() < 10) outStr +="0";
+    outStr += this.departure.getMinutes()
+
+    return outStr;
+  }
 }
 
 
 document.addEventListener("DOMContentLoaded", Global.init);
-document.addEventListener("DOMContentLoaded", Departures.init);
+document.addEventListener("DOMContentLoaded", DeparturesDisplayHandler.initialize);

@@ -796,7 +796,10 @@ function printDepartureAPIBox($res_description)//$heading, $json_departures_file
 	{
 		// doesn't help me here :(
 		// $local_time_offset = date_offset_get(); // should get offset by seconds
-		$offset_for_time = -7200000; //  -3600000 in winter, -7200000 in summer;
+                //  -3600000 in winter, -7200000 in summer;
+                //$timezone_offset_string = substr(date(DATE_RFC2822), -4);
+                //$timezone_offset_milliseconds = ((int) substr($timezone_offset_string, 0, 2)) * 3600 * 1000 * -1;
+		$offset_for_time = ((int) date('Z')) * -1000;
 		foreach($json_departures['Departures']  as $cur_departure_item)
 		{
 			println('  <div class="departure_row ' . simplifiedVehicleClass($cur_departure_item['Mot']) . '">');
@@ -907,7 +910,7 @@ function printDepartureBox($httpUserAgent, $arrDepartures, $departureWhiteBlackL
 		print('        ⌚');
 		println($departure->vehicleDeparture);
 		println('    </div>');
-		println('    <div class="cleaner"> &nbsp; </div>');
+		//println('    <div class="cleaner"> &nbsp; </div>');
 		println('  </div>');
 	}
 	println('</div>');
