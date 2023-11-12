@@ -181,7 +181,11 @@ foreach($EXTERNAL_RESSOURCES as $cur_res)
 	{
 		$cur_res['render_func']($cur_res);
 	}
-	println('<div style="clear:both;"></div>');
+        if(array_key_exists('css_clear_afterwards', $cur_res)
+        && false !== $cur_res['css_clear_afterwards'])
+        {
+	        println('<div style="clear:both;"></div>');
+        }
 }
 println("<div class=\"link_row\">");
 println("  <a href=\"https://www.wetteronline.de/regenradar/sachsen\">Regen-Radar</a>");
@@ -210,6 +214,7 @@ function removeAllChilds(parentNode)
 }
 </script>
 <?php
+//include('abfahrten-160.php');
 println("</div><div class=\"cleaner\"> &nbsp; </div>");
 	println("<div>");
 function printNewsTab($res_description)
