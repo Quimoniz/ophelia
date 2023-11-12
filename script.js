@@ -319,6 +319,48 @@ class DepartureBlob
   }
 }
 
+var hovering_clock = {
+  wrapperEle: undefined,
+  descEle: undefined,
+  initTime: "",
+  initOffset: 0,
+  previousTimeString: undefined,
+  init: function()
+  {
+    hovering_clock.wrapperEle = document.querySelector(".hovering_clock_wrapper");
+    hovering_clock.descEle = document.querySelector(".hovering_clock_time");
+    hovering_clock.initTime = parseInt(hovering_clock.descEle.getAttribute("timestamp_ms"));
+    hovering_clock.initOffset = hovering_clock.initTime - (new Date()).getTime();
+    hovering_clock.previousTimeString = hovering_clock.descEle.firstChild.nodeValue;
+    hovering_clock.descEle.setAttribute("title", "Offset, from Server Time: " + (hovering_clock.initOffset / 1000 * -1) + " Sekunden");
+    hovering_clock.wrapperEle.style.left = (window.innerWidth / 2 - hovering_clock.wrapperEle.offsetWidth / 2) + "px";
+    hovering_clock.update();
+    setInterval(hovering_clock.update, 1000);
+  },
+  update: function()
+  {
+    var adjustedTime = new Date((new Date()).getTime() + hovering_clock.initOffset);
+    var timeTuples = [
+      adjustedTime.getHours(),
+      adjustedTime.getMinutes(),
+      adjustedTime.getSeconds()
+    ];
+    var timeAsString = "";
+    var firstTuple = true;
+    for(var curTuple of timeTuples)
+    {
+      if(firstTuple) firstTuple = false;
+      else           timeAsString += ":";
+      if(curTuple < 10) timeAsString += "0";
+      timeAsString += curTuple;
+    }
+    if(hovering_clock.previousTimeString != timeAsString)
+    {
+      hovering_clock.descEle.firstChild.nodeValue = timeAsString;
+    }
+  }
+};
+
 
 document.addEventListener("DOMContentLoaded", Global.init);
 document.addEventListener("DOMContentLoaded", DeparturesDisplayHandler.initialize);
