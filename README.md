@@ -1,6 +1,6 @@
-# Ophelia's window
+# ![./img/weather/typ_gross.small.png](./img/weather/typ_gross.small.png) Ophelia's window ![./img/weather/sonne.small.png](./img/weather/sonne.small.png)
 
-![./img/weather/sonne.small.png](./img/weather/sonne.small.png) A lightweight data-visualization-framework for data of your immediate surroundings, like weather, public transport departures and rss feeds. ![./img/weather/typ_gross.small.png](./img/weather/typ_gross.small.png)
+A lightweight data-visualization-framework for data of your immediate surroundings, like weather, public transport departures and rss feeds. 
 
 ![status-page-screenshot_2023-12-06](https://github.com/Quimoniz/ophelia/assets/653290/fdab311c-09a1-4f96-870b-c45dbc61ae26)
 
@@ -18,6 +18,10 @@ On a historical note: The first version of Ophelia dates back to the year 2016.
 - Vocabulary display (commented out, it's disfunct right now)
 
 See the [example config file](./config.php.sample)
+
+## Setup
+
+Just copy them files over, edit the [example config file](./config.php.sample) and store it under `config.php` (i.e. truncate the file name extension `.sample`).  It's PHP, so refer to whatever tutorial detailing the steps on how to set up PHP. If you want to run the OpenWeatherMap component, do setup a MariaDB database, including the user and database setup. Thereafter run the file [ophelia-table-creation.sql](./ophelia-table-creation.sql) to create the `openweathermap_forecast` table which is being used to Cache the weather data.
 
 ## Boring stuff
 
