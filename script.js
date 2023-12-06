@@ -19,7 +19,7 @@ console.log(this);
     this.BODY = document.getElementsByTagName("body")[0];
     this.vvoList = parentEle;
     this.departureRows = new Array();
-    this.MAX_DEPARTURES_TO_SHOW = 8;
+    this.MAX_DEPARTURES_TO_SHOW = 20;
   //offsetForTime: -3600000,
     this.offsetForTime = 0;
     this.parseDepartureRows();
