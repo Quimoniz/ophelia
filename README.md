@@ -15,6 +15,7 @@ On a historical note: The first version of Ophelia dates back to the year 2016.
 - Weather, using OpenWeatherMap
 - VVO-Departure (tightly coupled)
 - Feedreader (tighly coupled)
+
 See the [example config file](./config.php.sample)
 
 Non-maintained (read: disfunct) components:
@@ -25,6 +26,8 @@ Non-maintained (read: disfunct) components:
 ## Setup
 
 Just copy them files over, edit the [example config file](./config.php.sample) and store it under `config.php` (i.e. truncate the file name extension `.sample`).  It's PHP, so refer to whatever tutorial detailing the steps on how to set up PHP. If you want to run the OpenWeatherMap component, do setup a MariaDB database, including the user and database setup. Thereafter run the file [ophelia-table-creation.sql](./ophelia-table-creation.sql) to create the `openweathermap_forecast` table which is being used to Cache the weather data.
+
+**Note**: Can be used well together with my [project PIRAT](https://github.com/Quimoniz/pirat): Which switches off and on a monitor based on sensory input of PIR or UltraSonic sensors, and can provide an additional output on a 128x64 OLED display.
 
 ## Boring stuff
 
