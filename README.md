@@ -15,9 +15,12 @@ On a historical note: The first version of Ophelia dates back to the year 2016.
 - Weather, using OpenWeatherMap
 - VVO-Departure (tightly coupled)
 - Feedreader (tighly coupled)
-- Vocabulary display (commented out, it's disfunct right now)
-
 See the [example config file](./config.php.sample)
+
+Non-maintained (read: disfunct) components:
+- Vocabulary display
+- Humidity graphing
+
 
 ## Setup
 
