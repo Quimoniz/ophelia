@@ -105,7 +105,9 @@ function configurePlotly(plotEle)
 	  annotations: new Array(),
 	  images: new Array(),
           //plot_bgcolor: "transparent",
-          paper_bgcolor: "transparent",
+          //paper_bgcolor: "transparent",
+          plot_bgcolor: 'rgb(184, 232, 255)',
+          paper_bgcolor: 'rgb(184, 232, 255)',
 	  margin: {
 	    t: 0,
 		r: 0,
@@ -171,22 +173,43 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
         size: 13
       }
     },
-    // add now:
-    {
-      x: [
-        now.getTime() - (1800 * 1000),
-        now.getTime() + (1800 * 1000)
-      ],
-      y: [
-        20,
-        20
-      ],
-      fill: 'tozeroy',
-      type: 'scatter',
-      mode: 'none',
-      fillcolor: 'rgba(240, 128, 128, 0.4)'
-    }
    ];
+  plotlyConfiguration.plotlyLayout.annotations.push(
+    {
+      x: now.getTime(),
+      xref: 'x',
+      y: 0.4,
+      yref: 'paper',
+      text: "►",
+      //text: "&#0231A;",//"\u0231A",
+      mode: "text",
+      showarrow: false,
+      bgcolor: "rgba(255, 255, 255, 0.3)",
+      font: {
+        size: 32,
+        //family: 'Courier New, monospace',
+        //color: '#ffffff'
+      },
+    });
+  plotlyConfiguration.plotlyLayout["shapes"] = [{
+    // add now:
+      x0: now.getTime() - (1800 * 1000),
+      x1: now.getTime() + (1800 * 1000),
+      xref: 'x',
+      y0: 0,
+      y1: 1,
+      yref: 'paper',
+      //fill: 'tozeroy',
+      //type: 'scatter',
+      type: 'rect',
+      mode: 'none',
+      fillcolor: 'rgba(255, 240, 128, 0.6)',
+      //fillcolor: 'rgba(240, 128, 128, 0.4)', // light red
+      line: {
+          width: 0
+      }
+  }];
+
 
 
   var minTime = startTime.getTime();
@@ -290,7 +313,7 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
         curAnnotation.x -= 3600 * 1 * 1000;
         curAnnotation.ay *= 1.5;
       }
-      plotlyConfiguration.plotlyLayout.annotations.push(curAnnotation);
+      //plotlyConfiguration.plotlyLayout.annotations.push(curAnnotation);
      }
   }
 
@@ -391,8 +414,9 @@ img/weather/wolke_wind.small.png
     maxTime + (1800 * 1000)
   ];
 
-  dataSerieses[1]["y"][0] = allMinMax[1];
-  dataSerieses[1]["y"][1] = allMinMax[1];
+// setting now...
+//  dataSerieses[1]["y"][0] = allMinMax[1];
+//  dataSerieses[1]["y"][1] = allMinMax[1];
   return dataSerieses;
 }
 
