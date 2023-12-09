@@ -174,22 +174,30 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
       }
     },
    ];
+  // Some text to aid the user in understanding
+  //    that the shape is to signify the current time
+  // MAYOR BRAIN MOVE:  JUST PRINT THE TIME
+  var nowText = "<span style=\"font-size: 90%\">"
+              + ((new Date()).toString().substring(16,21))
+              + "</span>  "
+              + "►"
   plotlyConfiguration.plotlyLayout.annotations.push(
     {
       x: now.getTime(),
       xref: 'x',
       y: 0.4,
       yref: 'paper',
-      text: "►",
+      text: nowText,
       //text: "&#0231A;",//"\u0231A",
       mode: "text",
       showarrow: false,
-      bgcolor: "rgba(255, 255, 255, 0.3)",
+      //bgcolor: "rgba(255, 255, 255, 0.3)",
       font: {
         size: 32,
         //family: 'Courier New, monospace',
-        //color: '#ffffff'
+        color: '#ffffff'
       },
+      textangle: '-90',
     });
   plotlyConfiguration.plotlyLayout["shapes"] = [{
     // add now:
@@ -300,8 +308,9 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
           size: 18,
           color: curPos.color
         },
-        bgcolor: "rgba(255, 255, 255, 0.7)",
-        arrowcolor: "#b0b0b0"
+        bgcolor: "rgba(255, 255, 255, 0.5)",
+        arrowcolor: "#b0b0b0",
+        opacity: 0.6,
       };
       if("min" == curPos.type) curAnnotation.ay *= -1;
       if(curAnnotation.x < (minTime + 3600 * 1 * 1000))
@@ -313,7 +322,7 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
         curAnnotation.x -= 3600 * 1 * 1000;
         curAnnotation.ay *= 1.5;
       }
-      //plotlyConfiguration.plotlyLayout.annotations.push(curAnnotation);
+      plotlyConfiguration.plotlyLayout.annotations.push(curAnnotation);
      }
   }
 
