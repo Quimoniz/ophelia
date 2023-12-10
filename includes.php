@@ -389,7 +389,9 @@ function print_openweathermap($res_description)
 		note_error(__FUNCTION__, "Couldn't connect to database");
 	} else
 	{
-		$ts_today = strtotime("today",time());
+                // FIXME...
+		$offset_for_time = 0;//((int) date('Z')) * -1;
+		$ts_today = strtotime("today",time()) + $offset_for_time;
 		$ts_end = $ts_today + 86400*2 - 3600;
 		$result = $db_handle->query("SELECT ((FLOOR((dt - $ts_today) / (3600*8)) * (3600 * 8)) + $ts_today) AS 'mytime', MIN(temp) AS 'temp_min', AVG(temp) AS 'temp_avg', MAX(temp) AS 'temp_max', AVG(humidity) AS 'humidity', MAX(wind_speed) AS 'wind_speed', AVG(clouds) AS 'clouds', GROUP_CONCAT(weather_name) AS 'weather_name', GROUP_CONCAT(weather_icon) AS 'weather_icon', GROUP_CONCAT(weather_description) AS 'weather_description' FROM openweathermap_forecast WHERE dt >= $ts_today AND dt <= $ts_end GROUP BY mytime");
 		println('<div class="weather_box">');
