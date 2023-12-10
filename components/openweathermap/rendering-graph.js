@@ -395,7 +395,7 @@ img/weather/wolke_wind.small.png
         curImage.source += "wolke_regen_2.small.png";
         break;
       case '10':   // "rain"
-        curImage.source += "wolke_regen.small_animiert.gif";
+        curImage.source += "wolke_regen.small.png";
         break;
       case '11':   // "thunderstorm"
         curImage.source += "blitz.small.png";
