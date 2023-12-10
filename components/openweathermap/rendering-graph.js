@@ -325,17 +325,13 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
       plotlyConfiguration.plotlyLayout.annotations.push(curAnnotation);
      }
   }
-
-  // TODO: think about some merging algorithm for the clouds of each 4 hour period
-  for(var i = 0; i < owmArr.length; i+=2)
-  {
-    let curImage = {
+  let cloudinessImage = {
           source:  "img/weather/",
 	  xref:    "x",  // sets the coordinate system
 	  yref:    "paper",  
           //TODO:
-	  x:       owmArr[i].timestamp * 1000,//startTime.getTime() + (1000 * 3600 * i),
-	  y:       0.25,  // hardcoded y-offset; with 'yref' being paper, 0.5 would refer to half of full height (full height = 1)
+	  x:       0,
+	  y:       0.35,  // hardcoded y-offset; with 'yref' being paper, 0.5 would refer to half of full height (full height = 1)
 	  xanchor: "center",
 	  yanchor: "middle",
 	  //x: i, y: 20, xref: "paper", yref: "paper",
@@ -344,14 +340,20 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
 // plot: https://www.wolframalpha.com/input?i=f%28x%29%3D0.9%2F%28x%2F600%29%3B+x+from+500+to+1100
           sizey:  (0.9 / (window.innerHeight / 600)),
 	  sizing:  "stretch",
-	  opacity: 0.5,
+	  opacity: 0.7,
 	  layer:   "below"
 	};
+
+  // TODO: think about some merging algorithm for the clouds of each 4 hour period
+  for(var i = 0; i < owmArr.length; i+=2)
+  {
+        let curImage = Object.assign({}, cloudinessImage)
+	curImage.x   = owmArr[i].timestamp * 1000;//startTime.getTime() + (1000 * 3600 * i),
         // if current line drawn (i.e. temperature) is below average,
         //   then switch position of the image 'below', to be drawn at the top of the graph
         if(owmArr[i].temp < (allMinMax[0] + deltaMinMax / 2))
         {
-          curImage.y = 0.75;
+          curImage.y = 0.65;
         }
 /*  all the weather icons we got
 img/weather/achtung.small.png
@@ -409,7 +411,38 @@ img/weather/wolke_wind.small.png
      //+ (Math.random() < 0.5 ? "sonne.small.png" : "wolke_regen_2.small.png") ),
     }
     plotlyConfiguration.plotlyLayout.images.push(curImage);
-	
+  }
+  for(var i = 0; i < owmArr.length; i+=1)
+  {
+        let curImage = Object.assign({}, cloudinessImage)
+	curImage.x       = owmArr[i].timestamp * 1000;//startTime.getTime() + (1000 * 3600 * i),
+        curImage.y       = 0.05 + (0.2 * (i % 2));
+	curImage.sizex = (1000 * 3600 * 1.05);
+        curImage.sizey = (0.9 / (window.innerHeight / 300)),
+	curImage.opacity = 0.2;
+console.log(owmArr[i].weather_name);
+        switch(owmArr[i].weather_name)
+        {
+            case "Clouds":
+                curImage.source += "wolke_klein_2.small.png";
+                break;
+            case "Rain":
+                curImage.source += "wolke_ansammlung.small.png";
+                break;
+            case "Clear":
+                curImage.y += 0.5;
+                curImage.source += "sonne.small.png";
+                break;
+            case "Thunderstorm":
+                curImage.source += "blitz.small.png";
+                break;
+            case "Snow":
+                curImage.source += "schneeflocken.small.png";
+                break;
+            //case "Drizzle":
+            //    break;
+        }
+        plotlyConfiguration.plotlyLayout.images.push(curImage);
   }
   
   //  set the graph's y axis to only contain min to max temperature, not more
