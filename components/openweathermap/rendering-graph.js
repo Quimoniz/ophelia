@@ -385,25 +385,25 @@ img/weather/wolke_wind.small.png
         curImage.source += "sonne.small.png";
         break;
       case '02':   // "few clouds"
-        curImage.source += "typ_eiswaffel.small.png";
-        break;
-      case '03':   // "scattered clouds"
         curImage.source += "wolke_sonne_2.small.png";
         break;
-      case '04':   // "broken clouds"
-        curImage.source += "wolke_sonne.small.png";
+      case '03':   // "scattered clouds"
+        curImage.source += "wolke_klein_2.small.png";
         break;
-      case '09':   // "shower rain"
-        curImage.source += "wolke_regen_2.small.png";
+      case '04':   // "broken clouds"
+        curImage.source += "wolke_ansammlung.small.png";
         break;
       case '10':   // "rain"
+        curImage.source += "wolke_regen_2.small.png";
+        break;
+      case '09':   // "shower rain"
         curImage.source += "wolke_regen.small.png";
         break;
       case '11':   // "thunderstorm"
         curImage.source += "blitz.small.png";
         break;
       case '13':   // "snow"
-        curImage.source += "schneeflocken.small.png";
+        curImage.source += "wolke_schnee.small.png";
         break;
       case '50':   // "mist"
         curImage.source += "typ_kaffee.small.png";
