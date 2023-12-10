@@ -106,8 +106,8 @@ function configurePlotly(plotEle)
 	  images: new Array(),
           //plot_bgcolor: "transparent",
           //paper_bgcolor: "transparent",
-          plot_bgcolor: 'rgb(184, 232, 255)',
-          paper_bgcolor: 'rgb(184, 232, 255)',
+          plot_bgcolor: 'rgb(204, 240, 255)',
+          paper_bgcolor: 'rgb(204, 240, 255)',
 	  margin: {
 	    t: 0,
 		r: 0,
@@ -161,7 +161,7 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
       //text: new Array(),
       mode: "lines+markers",
       line: {
-        color: "#000000",
+        color: "#a78529",
         width: 4
       },
       marker: {
@@ -169,7 +169,7 @@ function buildDataSerieses(owmArr, plotlyConfiguration, startTime, endTime)
         //   (note a few of them can't be used, as that documentation
         //      actually refers to the Python-Plotly, not the Javascript Plotly)
         symbol: "circle",
-        color: "#e0e020",
+        color: "#ffb829",
         size: 13
       }
     },
