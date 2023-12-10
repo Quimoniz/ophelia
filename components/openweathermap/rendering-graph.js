@@ -383,9 +383,11 @@ img/weather/wolke_wind.small.png
     {
       case '01':   // "clear sky"
         curImage.source += "sonne.small.png";
+        curImage.sizey *= 1.3;
         break;
       case '02':   // "few clouds"
         curImage.source += "wolke_sonne_2.small.png";
+        curImage.sizey *= 1.3;
         break;
       case '03':   // "scattered clouds"
         curImage.source += "wolke_klein_2.small.png";
@@ -395,6 +397,7 @@ img/weather/wolke_wind.small.png
         break;
       case '10':   // "rain"
         curImage.source += "wolke_regen_2.small.png";
+        curImage.sizey *= 1.3;
         break;
       case '09':   // "shower rain"
         curImage.source += "wolke_regen.small.png";
@@ -411,38 +414,6 @@ img/weather/wolke_wind.small.png
      //+ (Math.random() < 0.5 ? "sonne.small.png" : "wolke_regen_2.small.png") ),
     }
     plotlyConfiguration.plotlyLayout.images.push(curImage);
-  }
-  for(var i = 0; i < owmArr.length; i+=1)
-  {
-        let curImage = Object.assign({}, cloudinessImage)
-	curImage.x       = owmArr[i].timestamp * 1000;//startTime.getTime() + (1000 * 3600 * i),
-        curImage.y       = 0.05 + (0.2 * (i % 2));
-	curImage.sizex = (1000 * 3600 * 1.05);
-        curImage.sizey = (0.9 / (window.innerHeight / 300)),
-	curImage.opacity = 0.2;
-console.log(owmArr[i].weather_name);
-        switch(owmArr[i].weather_name)
-        {
-            case "Clouds":
-                curImage.source += "wolke_klein_2.small.png";
-                break;
-            case "Rain":
-                curImage.source += "wolke_ansammlung.small.png";
-                break;
-            case "Clear":
-                curImage.y += 0.5;
-                curImage.source += "sonne.small.png";
-                break;
-            case "Thunderstorm":
-                curImage.source += "blitz.small.png";
-                break;
-            case "Snow":
-                curImage.source += "schneeflocken.small.png";
-                break;
-            //case "Drizzle":
-            //    break;
-        }
-        plotlyConfiguration.plotlyLayout.images.push(curImage);
   }
   
   //  set the graph's y axis to only contain min to max temperature, not more

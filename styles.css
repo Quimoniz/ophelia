@@ -180,7 +180,7 @@ a:link,a:visited {
 }
 .weather_day {
   height: 19.5vh;
-  background-color: #b8e8ff;
+  background-color: rgb(204, 240, 255);
 }
 .weather_daylabel {
   display: block;
