@@ -19,6 +19,21 @@ if(@file_exists('config.php'))
 
 
 set_time_limit(30);
+
+// Include all the component's includes
+foreach($EXTERNAL_RESSOURCES as $cur_key => $cur_value)
+{
+	if(array_key_exists('include', $cur_value))
+	{
+		if(file_exists($cur_value['include']))
+		{
+			// the promised 'once' benefit is not present, we
+			//   have to take care about that ourselves....
+			include_once($cur_value['include']);
+		}
+	}
+}
+
 $min_cache = 600; // affects automatic site reload
 $cacheAge=array();
 foreach($EXTERNAL_RESSOURCES as $cur_key => $cur_value)

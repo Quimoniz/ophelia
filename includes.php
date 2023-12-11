@@ -1,5 +1,4 @@
 <?php
-include('xmlparser.php');
 
 class DepartureData
 {
@@ -19,33 +18,6 @@ class WeatherRow
 	public $weatherDownfall = "";
 	public $weatherWindDesc = "";
 	public $weatherWindSpeed = "";
-}
-class NewsItem {
-	public $title;
-	public $link;
-	public $description;
-	public $category;
-	function __construct($xmlItem)
-	{
-		foreach($xmlItem->children as $curChild)
-		{
-			switch($curChild->tagName)
-			{
-				case "title":
-					$this->title = $curChild->text;
-					break;
-				case "link":
-					$this->link  = $curChild->text;
-					break;
-				case "description":
-					$this->description = $curChild->text;
-					break;
-				case "category":
-					$this->category = $curChild->text;
-					break;
-			}
-		}
-	}
 }
 function can_i_write_to($filepath)
 {
@@ -132,36 +104,6 @@ function note_error($error_source, $error_msg)
 {
 	global $error_store;
 	array_push($error_store, array($error_source, $error_msg));
-}
-function parseRss($RSS_FILE = "")
-{
-	$xmlText = get_filecache($RSS_FILE);
-	$parsedXml = parseXml($xmlText);
-	$items_arr = array();
-	if($parsedXml)
-	{
-		$root_nodes = $parsedXml->querySelectorAll("rss");
-		if(0 == count($root_nodes))
-		{
-			$root_nodes = $parsedXml->querySelectorAll("rdf:RDF");
-		}
-		if(0 < count($root_nodes))
-		{
-			$items_node_arr = $root_nodes[0]->querySelectorAll("* channel item");
-			if(0 == count($items_node_arr))
-			{
-			    $items_node_arr = $root_nodes[0]->querySelectorAll("* item");
-			}
-			foreach($items_node_arr as $cur_item_node)
-			{
-				$items_arr[] = new NewsItem($cur_item_node);
-			}
-		} else
-		{
-			throw new Exception("Uh oh, I didn't find no rss or rdf:RDF root node when trying to parseRss('" . htmlspecialchars($RSS_FILE) . "')");
-		}
-	}
-	return $items_arr;
 }
 function parseVvoReply($VVO_FILE = "")
 {
