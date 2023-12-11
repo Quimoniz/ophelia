@@ -140,10 +140,25 @@ function parseRss($RSS_FILE = "")
 	$items_arr = array();
 	if($parsedXml)
 	{
-		$items_node_arr = $parsedXml->querySelectorAll("rss channel item");
-		foreach($items_node_arr as $cur_item_node)
+		$root_nodes = $parsedXml->querySelectorAll("rss");
+		if(0 == count($root_nodes))
 		{
-			$items_arr[] = new NewsItem($cur_item_node);
+			$root_nodes = $parsedXml->querySelectorAll("rdf:RDF");
+		}
+		if(0 < count($root_nodes))
+		{
+			$items_node_arr = $root_nodes[0]->querySelectorAll("* channel item");
+			if(0 == count($items_node_arr))
+			{
+			    $items_node_arr = $root_nodes[0]->querySelectorAll("* item");
+			}
+			foreach($items_node_arr as $cur_item_node)
+			{
+				$items_arr[] = new NewsItem($cur_item_node);
+			}
+		} else
+		{
+			throw new Exception("Uh oh, I didn't find no rss or rdf:RDF root node when trying to parseRss('" . htmlspecialchars($RSS_FILE) . "')");
 		}
 	}
 	return $items_arr;
@@ -368,7 +383,8 @@ group in 3 hour-intervals, show min-avg-max temperature for these intervals:
 
 SELECT FROM_UNIXTIME((FLOOR((dt - 1657576800) / (3600*3)) * (3600 * 3)) + 1657576800) AS 'mytime', MIN(temp), AVG(temp), MAX(temp) FROM openweathermap_forecast WHERE dt >= 1657576800 AND dt <= 1657746000 GROUP BY mytime;
 */
-		file_put_contents('lengthy-sql-replace.sql', $combined_insert);
+                // DEBUG OUTPUT:
+		//file_put_contents('lengthy-sql-replace.sql', $combined_insert);
 		//echo "<pre>";
 		//print_r($combined_insert);
 		//echo "</pre>";

@@ -37,6 +37,12 @@ class XmlNode {
 				}
 			}
 			return NULL;
+		} elseif('*' == $selector[0])
+		{
+			if(0 < strlen($this->tagName))
+			{
+				return $this;
+			}
 		}
 		if(0 === strcmp($selector, $this->tagName))
 		{
@@ -78,7 +84,7 @@ function parseXml($xml_code)
 	$TREAT_COMMENT_AS_TEXTCONTENT = TRUE;
 	$within_tag = FALSE;
 	$scanning_tag_name = FALSE;
-	$within_attribute = FALSE;
+	$within_attribute_value = FALSE;
 	$scanning_attribute_name = FALSE;
 	$within_escape = FALSE;
 	$cur_element = NULL;
@@ -89,6 +95,7 @@ function parseXml($xml_code)
 	$root_element = NULL;
 	$do_parse_attributes = TRUE;
 	$special_out_of_syntax = FALSE;
+        $unbalanced_tag_with_slash = FALSE;
 	for($i = 0; $i < $xml_len; $i++)
 	{
 		$c = $xml_code[$i];
@@ -193,7 +200,7 @@ function parseXml($xml_code)
 				// FALSE == $scanning_tag_name
 				} else
 				{
-					if(FALSE === $within_attribute)
+					if(FALSE === $within_attribute_value)
 					{
 						if(is_space($c) || '>' == $c)
 						{
@@ -204,6 +211,17 @@ function parseXml($xml_code)
 							if('>' == $c)
 							{
 								$within_tag = FALSE;
+								if($unbalanced_tag_with_slash)
+								{
+									$unbalanced_tag_with_slash = FALSE;
+									if($cur_element->parentNode)
+									{
+										$cur_element = $cur_element->parentNode;
+									} else
+									{
+										$cur_element = $root_element;
+									}
+								}
 							} else
 							{
 								$scanning_attribute_name = TRUE;
@@ -226,7 +244,10 @@ function parseXml($xml_code)
 							{
 								if('"' == $c)
 								{
-									$within_attribute = TRUE;
+									$within_attribute_value = TRUE;
+								} elseif('/' == $c)
+								{
+									$unbalanced_tag_with_slash = TRUE;
 								} else
 								{
 									$cur_attribute_value .= $c;
@@ -254,16 +275,18 @@ function parseXml($xml_code)
 								
 							}
 							$within_escape = false;
-						}
-						if("\\" == $c)
-						{
-							$within_escape = TRUE;
-						} elseif("\"" == $c)
-						{
-							$within_attribute = FALSE;
 						} else
 						{
-							$cur_attribute_value .= $c;
+							if("\\" == $c)
+							{
+								$within_escape = TRUE;
+							} elseif("\"" == $c)
+							{
+								$within_attribute_value = FALSE;
+							} else
+							{
+								$cur_attribute_value .= $c;
+							}
 						}
 					}
 				}
